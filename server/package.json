@@ -2,14 +2,18 @@
   "name": "irc_server",
   "version": "1.0.0",
   "description": "irc server for ETNA",
-  "main": "index.js",
+  "main": "src/index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+	"start:dev": "nodemon"
   },
   "author": "Kijaru, Caju, Cocoleplusbo, Kjpondaven",
   "license": "ISC",
   "dependencies": {
     "mysql": "^2.18.1",
-    "socketio": "^1.0.0"
+    "nodemon": "^2.0.15",
+    "socketio": "^1.0.0",
+    "ts-node": "^10.7.0",
+    "typescript": "^4.6.3"
   }
 }
