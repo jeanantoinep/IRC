@@ -1,2 +1,1 @@
-# Groupe de grasse_h 974591
-
+IRC client and server project by Hubert-Henri "Kijaru" GRASSET, Nathan "Caju" DEVOOGHT-OZENNE DEBAZ, Corentin "Cocoleplusbo" Beaudet, and Jean-Antoine "Kjpondaven" Pondaven

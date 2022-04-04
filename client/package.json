@@ -1,0 +1,14 @@
+{
+  "name": "irc_client",
+  "version": "1.0.0",
+  "description": "irc client for ETNA",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Kijaru, Caju, Cocoleplusbo, Kjpondaven",
+  "license": "ISC",
+  "dependencies": {
+    "socketio": "^1.0.0"
+  }
+}
