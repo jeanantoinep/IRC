@@ -4,8 +4,8 @@
   "description": "irc client for ETNA",
   "main": "src/index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-	"start:dev": "nodemon",
+    "test": "echo \"Error: no test specified\" && exit 1",
+	"start:dev": "nodemon"
   },
   "author": "Kijaru, Caju, Cocoleplusbo, Kjpondaven",
   "license": "ISC",
