@@ -1,1 +1,1 @@
-IRC client and server project by Hubert-Henri "Kijaru" GRASSET, Nathan "Caju" DEVOOGHT-OZENNE DEBAZ, Corentin "Cocoleplusbo" Beaudet, and Jean-Antoine "Kjpondaven" Pondaven
+IRC client and server project by Hubert-Henri "Kijaru" GRASSET, Nathan "Caju" DEVOOGHT-OZENNE DEBAZ, Corentin "Cocoleplusbo" Baudet, and Jean-Antoine "Kjpondaven" Pondaven
