@@ -27,18 +27,6 @@ function LoadConfig() {
 }
 
 
-interface ServerToClientEvents {
-    noArg: () => void;
-    basicEmit: (a: number, b: string, c: Buffer) => void;
-    withAck: (d: string, callback: (e: number) => void) => void;
-}
-
-interface ClientToServerEvents {
-    hello: () => void;
-    basicEmit: (a: number, b: string, c: Buffer) => void;
-}
-
-
 function Connect() {
 
     let url = `http://${Config.hostName}:${Config.portNumber}`
@@ -60,26 +48,19 @@ function Connect() {
 
 
 function Interacting(socket: Socket<ServerToClientEvents, ClientToServerEvents>) {
-
-    socket.emit("hello");
-
-    socket.on("noArg", () => {
-        // ...
-    });
-    socket.on("basicEmit", (a, b, c) => {
-        // a is inferred as number, b as string and c as buffer
-        console.log("basicEmit received from server :")
-        console.log(b)
-    });
-    socket.on("withAck", (d, callback) => {
-        // d is inferred as string and callback as a function that takes a number as argument
-    });
-
     // to create a new room
-    // socket.emit("basicEmit", 1, 'create_room New Room', Buffer.from([3]))
+    // socket.emit("addRoom", 'New Room')
 
     // to get all rooms
-    socket.emit("basicEmit", 1, 'list_room', Buffer.from([3]))
+    socket.emit("listRoom")
+
+    socket.on("addRoom", (data: string) => {
+        console.log(JSON.parse(data))
+    })
+
+    socket.on("listRoom", (data: string) => {
+        console.log(JSON.parse(data))
+    })
 }
 
 
@@ -92,3 +73,30 @@ function main() {
 
 main()
 
+
+interface ServerToClientEvents {
+    login: (data: string) => void;
+    listRoom: (data: string) => void;
+    joinRoom: (data: string) => void; // room joined successfully ou erreur
+    history: (data: string) => void;
+    msg: (data: string) => void;
+    leaveRoom: (data: string) => void; // [toto] has left the chat ou [toto] connection lost
+    addRoom: (data: string) => void; // succès ou erreur
+    listUser: (data: string) => void;
+    pm: (data: string) => void; // seulement le message à l'envoyeur et au receveur
+    addFriend: (data: string) => void; // demande d'ami : pour accepter /accept ?
+}
+
+interface ClientToServerEvents {
+    handshake: (callback: (data: string) => void) => void;
+    login: (userData: string) => void; // username pour invité ou username + password pour personne enregistrée
+    listRoom: () => void;
+    joinRoom: (roomName: string) => void;
+    history: (data: string) => void; // 50 msg par défaut ? sinon nombre précisé
+    msg: (data: string) => void;
+    leaveRoom: () => void;
+    addRoom: (roomName: string) => void;
+    listUser: () => void;
+    pm: (data: string) => void; // nom user + message
+    addFriend: (username: string) => void;
+}
