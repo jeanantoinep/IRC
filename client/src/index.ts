@@ -26,6 +26,7 @@ function LoadConfig() {
     Config.printConfig();
 }
 
+
 interface ServerToClientEvents {
     noArg: () => void;
     basicEmit: (a: number, b: string, c: Buffer) => void;
@@ -34,15 +35,16 @@ interface ServerToClientEvents {
 
 interface ClientToServerEvents {
     hello: () => void;
+    basicEmit: (a: number, b: string, c: Buffer) => void;
 }
 
-function connect() {
+
+function Connect() {
 
     let url = `http://${Config.hostName}:${Config.portNumber}`
     // let socket = io(url);
 
     const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(url);
-
 
     if (!socket.connected) {
         console.log(`Unable to connect to ${url}`);
@@ -52,6 +54,12 @@ function connect() {
     } else {
         console.log(`Able to connect to ${url}`)
     }
+
+    return socket;
+}
+
+
+function Interacting(socket: Socket<ServerToClientEvents, ClientToServerEvents>) {
 
     socket.emit("hello");
 
@@ -65,12 +73,17 @@ function connect() {
     socket.on("withAck", (d, callback) => {
         // d is inferred as string and callback as a function that takes a number as argument
     });
+
+    socket.emit("basicEmit", 1, 'list_room', Buffer.from([3]))
 }
+
 
 function main() {
     LoadConfig();
-    connect();
+    const socket = Connect();
+    Interacting(socket);
 }
+
 
 main()
 
