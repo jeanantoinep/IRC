@@ -10,6 +10,10 @@ let rl = readline.createInterface({
 
 export default class DisplayDriver {
 
+    static getDriver() {
+        return rl;
+    }
+
     static chat(msg: string) {
         process.stdout.clearLine(0);
         process.stdout.cursorTo(0);
@@ -18,14 +22,22 @@ export default class DisplayDriver {
     }
 
     static printOnLine(msg: string, line: number = 1) {
+        //process.stdout.pause();
         process.stdout.clearLine(0);
         process.stdout.cursorTo(0);
-        //process.stdout.clearLine(0);
         process.stdout.write(msg);
-        //process.stdout.moveCursor(msg.length, 0);
+        //process.stdout.resume();
     }
 
     static print(msg: string) : void {
         process.stdout.write(msg);
+    }
+
+    static async createPrompt(message: string) {
+    let answer = new Promise((resolve, reject) => {
+        rl.question(message, (input) => resolve(input) );
+    });
+
+    return answer;
    }
 }

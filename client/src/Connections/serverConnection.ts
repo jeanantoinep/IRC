@@ -2,13 +2,14 @@ import {io, Socket} from 'socket.io-client'
 
 import Config from '../config'
 import DisplayDriver from '../Display/displayDriver';
+import {ServerToClientEvents, ClientToServerEvents} from './socketEvents'
+
 
 export default class ServerConnection {
-    private socket: Socket | null = null;
-    private connectionTryCount: number = 1;
+    private socket: Socket<ServerToClientEvents, ClientToServerEvents>|null = null;
+    private connectionTryCount: number = 3;
 
     ServerConnection() {
-        this.socket = null;
     }
 
     async tryConnect() : Promise<boolean> {
@@ -19,7 +20,7 @@ export default class ServerConnection {
         if (connectionStatus)
             return true;
         
-            let tryCount = this.connectionTryCount;
+        let tryCount = this.connectionTryCount;
         
         while (!connectionStatus && tryCount != 0) {
             for(let i = 5 ; i > 0 ; i--) {
@@ -43,4 +44,10 @@ export default class ServerConnection {
         }
         return true;
     }
+
+    getSocket() {
+        return this.socket;
+    }
+
+
 }
