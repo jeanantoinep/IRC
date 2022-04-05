@@ -68,12 +68,17 @@ function Interacting(socket: Socket<ServerToClientEvents, ClientToServerEvents>)
     });
     socket.on("basicEmit", (a, b, c) => {
         // a is inferred as number, b as string and c as buffer
-        console.log("2 : basicEmit received from server")
+        console.log("basicEmit received from server :")
+        console.log(b)
     });
     socket.on("withAck", (d, callback) => {
         // d is inferred as string and callback as a function that takes a number as argument
     });
 
+    // to create a new room
+    // socket.emit("basicEmit", 1, 'create_room New Room', Buffer.from([3]))
+
+    // to get all rooms
     socket.emit("basicEmit", 1, 'list_room', Buffer.from([3]))
 }
 
