@@ -1,13 +1,13 @@
 import { Core } from './core'
+import { DatabaseDriver } from './databasedriver';
 
 
 const core = new Core();
-const io = core.initSocket();
-const pool = core.initMySQLConnection();
+const io = core.getIo();
+const dbDriver = new DatabaseDriver();
 
 io.on("connection", (socket) => {
-    console.log("connexion :", socket.handshake.headers.host);
-    console.log(socket.id)
+    console.log("connection from :", socket.id);
 
     // works when broadcast to all
     // io.emit("noArg");
@@ -24,24 +24,25 @@ io.on("connection", (socket) => {
 
     socket.on("listRoom", () => {
         console.log("list_room from client")
-        pool.query("SELECT * FROM `room`", function (err, result) {
-            if (err) {
-                io.emit("listRoom", JSON.stringify({"answer":"Error while trying to list rooms"}))
-                throw err;
-            }
-            let resultString = JSON.stringify(result)
-            io.emit("listRoom", resultString)
-        });
+        let result = dbDriver.getRooms()
+        console.log(result)
+            // if (result[0] == '0') {
+            //     io.emit("listRoom", JSON.stringify({"answer":"Error while trying to list rooms"}))
+            //     throw err
+            // }
+            // let resultString = JSON.stringify(result)
+            // io.emit("listRoom", resultString)
+        
     })
 
     socket.on("addRoom", (roomName: string) => {
-        console.log("addRoom from client")
-        pool.query("INSERT INTO `room` (name) VALUES (?)", [roomName], function (err, result) {
-            if (err) {
-                io.emit("addRoom", JSON.stringify({"answer":"Error while trying to add a room"}))
-                throw err;
-            }
-            io.emit("addRoom", JSON.stringify({"answer":"Room added"}))
-        });
+        // console.log("addRoom from client")
+        // pool.query("INSERT INTO `room` (name) VALUES (?)", [roomName], function (err, result) {
+        //     if (err) {
+        //         io.emit("addRoom", JSON.stringify({"answer":"Error while trying to add a room"}))
+        //         throw err;
+        //     }
+        //     io.emit("addRoom", JSON.stringify({"answer":"Room added"}))
+        // });
     })
 });
