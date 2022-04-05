@@ -10,12 +10,12 @@ function LoadConfig() {
         if (!argument.startsWith('-'))
             return;
         switch (argument) {
-            case '-h':
+            case 'h':
                 if (Number(args[index + 1]) != NaN)
                     Config.setPort(Number(args[index + 1]));
                 else console.log(`Invalid port number: ${args[index + 1]}`)
                 break;
-            case '-p':
+            case 'p':
                 Config.setHostname(args[index + 1]);
                 break;
             default:

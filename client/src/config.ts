@@ -2,8 +2,8 @@
 export class Config {
     static configFilename = "TestConfig.json"
 
-    static portNumber: number = 0;
-    static hostName: string = '';
+    static portNumber: number = 3000;
+    static hostName: string = 'localhost';
 
     static setPort(port: number) {
         this.portNumber = port;
@@ -22,7 +22,7 @@ export class Config {
     }
 
     static printConfig() {
-        console.log(`CLient mode! \nHostname: ${this.hostName}, Port: ${this.portNumber}`);
+        console.log(`Client mode! \nHostname: ${this.hostName}, Port: ${this.portNumber}`);
     }
 
 }

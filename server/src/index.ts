@@ -1,3 +1,4 @@
+import path from 'path';
 import { Server } from 'socket.io'
 
 
@@ -25,6 +26,7 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEve
 
 
 io.on("connection", (socket) => {
+    console.log("connexion :", socket.handshake.headers.host);
     socket.emit("noArg");
     socket.emit("basicEmit", 1, "2", Buffer.from([3]));
     socket.emit("withAck", "4", (e) => {
