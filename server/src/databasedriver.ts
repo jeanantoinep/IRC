@@ -41,16 +41,13 @@ export class DatabaseDriver {
     private async query(query: string) {
         return new Promise((resolve, reject)=>{
             this.pool.query(query,  (error, elements)=>{
-                if(error){
-                    return reject(error);
-                }
+                if(error) return reject(error);
                 return resolve(elements);
             });
         });
     }
 
     public async getRooms() : Promise<RoomsList[]> {
-        
         let res = await this.query("SELECT * FROM `room`") as RoomsList[];
         console.log(res)
         return res;
