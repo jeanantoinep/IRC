@@ -26,15 +26,45 @@ function LoadConfig() {
     Config.printConfig();
 }
 
+interface ServerToClientEvents {
+    noArg: () => void;
+    basicEmit: (a: number, b: string, c: Buffer) => void;
+    withAck: (d: string, callback: (e: number) => void) => void;
+}
+
+interface ClientToServerEvents {
+    hello: () => void;
+}
+
 function connect() {
 
     let url = `http://${Config.hostName}:${Config.portNumber}`
-    let socket = io(url);
+    // let socket = io(url);
+
+    const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(url);
+
 
     if (!socket.connected) {
         console.log(`Unable to connect to ${url}`);
-        return false;
+        socket.on("connect_error", (err) => {
+            console.log(`connect_error due to ${err.message}`);
+        });
+    } else {
+        console.log(`Able to connect to ${url}`)
     }
+
+    socket.emit("hello");
+
+    socket.on("noArg", () => {
+        // ...
+    });
+    socket.on("basicEmit", (a, b, c) => {
+        // a is inferred as number, b as string and c as buffer
+        console.log("2 : basicEmit received from server")
+    });
+    socket.on("withAck", (d, callback) => {
+        // d is inferred as string and callback as a function that takes a number as argument
+    });
 }
 
 function main() {

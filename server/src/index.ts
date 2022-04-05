@@ -27,11 +27,11 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEve
 
 io.on("connection", (socket) => {
     console.log("connexion :", socket.handshake.headers.host);
-    socket.emit("noArg");
-    socket.emit("basicEmit", 1, "2", Buffer.from([3]));
-    socket.emit("withAck", "4", (e) => {
-        // e is inferred as number
-    });
+    // socket.emit("noArg");
+    // socket.emit("basicEmit", 1, "2", Buffer.from([3]));
+    // socket.emit("withAck", "4", (e) => {
+    //     // e is inferred as number
+    // });
 
     // works when broadcast to all
     io.emit("noArg");
@@ -43,6 +43,7 @@ io.on("connection", (socket) => {
 
 io.on("connection", (socket) => {
     socket.on("hello", () => {
+        console.log("1 : hello received from client");
         io.emit("basicEmit", 1, "2", Buffer.from([3]));
     });
 });
