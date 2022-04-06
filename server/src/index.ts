@@ -29,9 +29,7 @@ io.on("connection", (socket) => {
 
 
 io.on("connection", (socket) => {
-    socket.on("ascii", () => {
-        socket.emit("ascii", ascii_art)
-    })
+    socket.emit("ascii", ascii_art);
 
     socket.on("login", () => {
         console.log("login received from client")

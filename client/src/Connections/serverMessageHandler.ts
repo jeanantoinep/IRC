@@ -18,7 +18,7 @@ export class ServerMessageHandler {
         this.socket.on('addFriend', (data:string) => this.recvAddFriend(data));
         this.socket.on('addRoom', (data:string) => this.recvAddRoom(data));
         this.socket.on('connect', ()=> this.recvConnect());
-        this.socket.on('connect_error', (err: Error) => this.recvConnectError(err));
+        this.socket.on('connect_error', async (err: Error) => await this.recvConnectError(err));
         this.socket.on('disconnect', (reason: Socket.DisconnectReason) => this.recvDisconnect(reason));
         this.socket.on('history', (data: string) => this.recvHistory(data));
         this.socket.on('joinRoom', (data: string) => this.recvJoinRoom(data));
@@ -26,15 +26,28 @@ export class ServerMessageHandler {
         this.socket.on('listRoom', (data: string) => this.recvListRoom(data));
         this.socket.on('listUser', (data: string) => this.recvListUsers(data));
         this.socket.on('login', (data: string) => this.recvLogin(data))
-        this.socket.on('msg', (data:string) => this.RecvMessage(data));
+        this.socket.on('msg', (data:string) => this.recvMessage(data));
+        this.socket.on('ascii', (data: string) => this.recvAsciiBanner(data));
+    }
+
+    recvAsciiBanner(data: string) {
+        DisplayDriver.print(data);
+        DisplayDriver.print('\n');
     }
 
     recvConnect() {
-
+        console.log('OK')
     }
 
-    recvConnectError(err: Error) {
+    async recvConnectError(err: Error) {
+        DisplayDriver.print('Socket connection error: ' + err);
 
+        for(let i = 5 ; i > 0 ; i--) {
+            DisplayDriver.printOnLine(`Retrying in ${i} seconds ...`, 1);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        DisplayDriver.print('\n');
+        this.socket.connect();
     }
 
     recvDisconnect(reason: Socket.DisconnectReason) {
@@ -77,7 +90,7 @@ export class ServerMessageHandler {
 
     }
 
-    RecvMessage(messageData: string) {
+    recvMessage(messageData: string) {
         let messageObject = JSON.parse(messageData);
         let messageType = messageObject['type'];
 

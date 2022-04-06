@@ -1,4 +1,4 @@
-import ServerConnection from "../connections/serverConnection";
+import ServerConnection from "../Connections/serverConnection";
 import Config from "../config";
 import DisplayDriver from "../Display/displayDriver";
 
@@ -18,11 +18,6 @@ export default class Core{
     }
 
     async initServerConnection() {
-        let connectionStatus = await this.connection.tryConnect();
-    
-        if(!connectionStatus) {
-            DisplayDriver.print('Fatal error, aborting...');
-            //process.exit(1)
-        }
+        this.connection.tryConnect();
     }
 }
