@@ -10,7 +10,6 @@ export class ClientMessageHandler {
     }
 
     init() {
-
         // let rlDriver = DisplayDriver.getDriver();
         // rlDriver.on('line', (input: string) => {
         //     return this.parseMessage(input);
@@ -46,7 +45,7 @@ export class ClientMessageHandler {
                     this.sendHistoryRequest(Number(commandArgs[1]));
                 this.sendHistoryRequest();
                 break;
-                
+
             case '/leave':
                 this.sendLeaveRequest();
                 break;

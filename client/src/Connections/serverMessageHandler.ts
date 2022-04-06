@@ -50,7 +50,7 @@ export class ServerMessageHandler {
     }
 
     recvAddFriend(data: string) {
-
+        
     }
 
     recvAddRoom(data: string) {
@@ -77,10 +77,26 @@ export class ServerMessageHandler {
 
     }
 
+    RecvMessage(messageData: string) {
+        let messageObject = JSON.parse(messageData);
+        let messageType = messageObject['type'];
 
-
-    RecvMessage(message: string) {
-
+        if(messageType == 'message') {
+            let timestamp = messageObject['timestamp'];
+            let userName = messageObject['username'];
+            let message = messageObject['message'];
+            DisplayDriver.chat(`${timestamp} <@${userName}> ${message}`);
+        }
+        else if (messageType == 'join') {
+            let timestamp = messageObject['timestamp'];
+            let userName = messageObject['username'];
+            DisplayDriver.chat(`${timestamp} <@${userName}> entered the chat !`);
+        }
+        else if (messageType == 'leave') {
+            let timestamp = messageObject['timestamp'];
+            let reason = messageObject['reason'];
+            let userName = messageObject['username'];
+            DisplayDriver.chat(`${timestamp} <@${userName}> left the chat (${reason}) !`);
+        }
     }
-
 }
