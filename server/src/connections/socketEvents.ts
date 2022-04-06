@@ -1,4 +1,5 @@
 export interface ServerToClientEvents {
+    connect: (data: string) => void; // ascii buffer
     login: (data: string) => void;
     listRoom: (data: string) => void;
     joinRoom: (data: string) => void; // room joined successfully ou erreur
@@ -12,6 +13,7 @@ export interface ServerToClientEvents {
 }
 
 export interface ClientToServerEvents {
+    connect: () => void;
     handshake: (callback: (data: string) => void) => void;
     login: (userData: string) => void; // username pour invité ou username + password pour personne enregistrée
     listRoom: () => void;

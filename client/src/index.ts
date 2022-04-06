@@ -9,19 +9,18 @@ function LoadConfig() {
     const args = process.argv.slice(2);
 
     args.forEach((argument, index) => {
-        if (!argument.startsWith('-'))
-            return;
+        // if (!argument.startsWith('-'))
+        //     return;
         switch (argument) {
-            case 'h':
-                if (Number(args[index + 1]) != NaN)
+            case 'p':
+                if (Number(args[index + 1]) != NaN) {
                     Config.setPort(Number(args[index + 1]));
+                }   
                 else console.log(`Invalid port number: ${args[index + 1]}`)
                 break;
-            case 'p':
+            case 'h':
                 Config.setHostname(args[index + 1]);
                 break;
-            default:
-                console.log('Invalid argument ' + argument);
         }
     })
 
@@ -51,10 +50,10 @@ function Connect() {
 
 function Interacting(socket: Socket<ServerToClientEvents, ClientToServerEvents>) {
     // to create a new room
-    // socket.emit("addRoom", 'New Room')
+    // socket.emit("addRoom", 'La Room')
 
     // to get all rooms
-    socket.emit("listRoom")
+    // socket.emit("listRoom")
 
     socket.on("addRoom", (data: string) => {
         console.log(JSON.parse(data))

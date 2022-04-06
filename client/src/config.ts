@@ -2,8 +2,8 @@
 export class Config {
     static configFilename = "TestConfig.json"
 
-    static portNumber: number = 3000;
-    static hostName: string = 'localhost';
+    static portNumber: number;
+    static hostName: string;
 
     static setPort(port: number) {
         this.portNumber = port;
