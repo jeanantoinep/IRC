@@ -1,21 +1,22 @@
 import readline from 'readline'
 
-
-let rl = readline.createInterface({
+let rl : readline.Interface = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
     prompt: '> ',
-    //terminal: true
+    terminal: false,
 });
 
+
 export default class DisplayDriver {
+
 
     static getDriver() {
         return rl;
     }
 
     static startChat() {
-        console.clear();
+        //console.clear();
         rl.prompt(true);
     }
 
@@ -42,15 +43,17 @@ export default class DisplayDriver {
         process.stdout.write(msg);
     }
 
-    static async createPrompt(message: string) : Promise<string> {
-        let answer = new Promise<string>((resolve, reject) => {
-            rl.question(message, (input) => resolve(input) );
+    static async createPrompt(message: string) {
+        let answer =  await new Promise<string>((resolve, reject) => {
+            rl.question(message, (input) => {
+                resolve(input);    
+            });
         });
-
         return answer;
     }
 
     static clearTerminal() {
         console.clear();
     }
+
 }

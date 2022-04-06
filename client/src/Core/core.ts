@@ -5,6 +5,7 @@ import { ClientMessageHandler } from "../Connections/clientMessageHandler";
 import { ServerMessageHandler } from "../Connections/serverMessageHandler";
 import { Socket } from "socket.io-client";
 import { Server } from "http";
+import { rawListeners } from "process";
 
 export enum Phase {
     load = 1,
@@ -18,11 +19,12 @@ export default class Core{
     private clientMessageHandler: ClientMessageHandler;
     private serverMessageHandler: ServerMessageHandler;
 
+    private serverBanner: string = '';
+
     constructor() {
         Config.initConfig();
         this.connection = new ServerConnection();
 
-        console.log(this.connection.getSocket())
         this.clientMessageHandler = new ClientMessageHandler(this.connection.getSocket());
         this.serverMessageHandler = new ServerMessageHandler(
                                         this.connection.getSocket(), 
@@ -30,20 +32,39 @@ export default class Core{
                                         this);
     };
 
+    public setServerBanner(banner: string) {
+        this.serverBanner = banner;
+    }
+
+    public async startLoginPhase() {
+        let login = await DisplayDriver.createPrompt('Login: ');
+        this.clientMessageHandler.sendLogin(login);
+    }
+
+    public async startRoomsListPhase() {
+        this.clientMessageHandler.sendRoomsListRequest();
+
+    }
+
     consolePhase(arg: Phase) {
         switch (arg) {
             case Phase.load:
                 break;
 
             case Phase.login:
-                DisplayDriver.clearTerminal();
+                DisplayDriver.print('\n')
+                this.startLoginPhase()
                 break;
 
             case Phase.roomList:
                 DisplayDriver.clearTerminal();
+                DisplayDriver.print(this.serverBanner);
+                this.startRoomsListPhase()
+                break;
 
             case Phase.chat:
                 DisplayDriver.startChat();
+                break;
 
           default:
               break;

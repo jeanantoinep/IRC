@@ -10,6 +10,10 @@ export class ClientMessageHandler {
 
     constructor(socket: Socket<ServerToClientEvents, ClientToServerEvents>) {
         this.socket = socket;
+
+        DisplayDriver.getDriver().on('line', (input:string) => {
+            this.parseMessage(input);
+        });
     };
 
     public getUsername() {
@@ -73,6 +77,11 @@ export class ClientMessageHandler {
                 this.sendPrivateMessageRequest();
                 break;
 
+            case '/addRoom':
+                this.sendAddRoomRequest(commandArgs[1]);
+            break;
+
+
             default:
                 DisplayDriver.print(`Invalid command ${commandArgs[0]} \n`);
                 break;
@@ -82,6 +91,9 @@ export class ClientMessageHandler {
 
     public sendLogin(username: string, password: string = '') {
         let loginPacket = {"username": username, "password": password};
+        console.log('Login packet sent: ' + JSON.stringify(loginPacket));
+
+        this.username = username;
         this.socket.emit('login', JSON.stringify(loginPacket));
     }
 
@@ -89,12 +101,17 @@ export class ClientMessageHandler {
         this.socket.emit('ascii');
     }
 
-    sendRoomsListRequest() {
+    public sendRoomsListRequest() {
         this.socket.emit('listRoom');
         return;
     };
 
-    sendJoinRequest(roomName: string = '') {
+    public sendAddRoomRequest(roomName: string) {
+        console.log('ADD ROOM')
+        this.socket.emit('addRoom', roomName);
+    }
+
+    public sendJoinRequest(roomName: string = '') {
         if(roomName == '') {
             DisplayDriver.print('Invalid command /join \n');
             DisplayDriver.print('Usage: /join {room_name}\n');
@@ -105,7 +122,7 @@ export class ClientMessageHandler {
         return;
     };
 
-    sendHistoryRequest(messageCount: number = 0) {
+    public sendHistoryRequest(messageCount: number = 0) {
         if(messageCount == NaN) {
             DisplayDriver.print('Invalid command /history \n');
             DisplayDriver.print('Usage: /history {message_count}');
@@ -120,12 +137,12 @@ export class ClientMessageHandler {
         return;
     };
 
-    sendLeaveRequest() {
+    public sendLeaveRequest() {
         this.socket.emit('leaveRoom');
         return;
     };
 
-    sendCreateRoomRequest(roomName: string = '') {
+    public sendCreateRoomRequest(roomName: string = '') {
         if(roomName == '') {
             DisplayDriver.print('Invalid command /create \n');
             DisplayDriver.print('Usage: /create {room_name}\n');
@@ -136,12 +153,12 @@ export class ClientMessageHandler {
         return;
     };
 
-    sendUsersListRequest() {
+    public sendUsersListRequest() {
         this.socket.emit('listUser');
         return;
     };
 
-    sendPrivateMessageRequest(userName: string = '', message: string = '') {
+    public sendPrivateMessageRequest(userName: string = '', message: string = '') {
         if(userName == '' || message == '') {
             DisplayDriver.print('Invalid command /pm \n');
             DisplayDriver.print('Usage: /pm {user_name} {message}\n');
@@ -152,7 +169,7 @@ export class ClientMessageHandler {
         return;
     };
 
-    sendAddFriendRequest(userName: string = '') {
+    public sendAddFriendRequest(userName: string = '') {
         if(userName == '') {
             DisplayDriver.print('Invalid command /add \n');
             DisplayDriver.print('Usage: /add {user_name}\n');
@@ -163,7 +180,7 @@ export class ClientMessageHandler {
         return;
     };
 
-    sendMessage(message: string) {
+    public sendMessage(message: string) {
         this.socket.emit('msg', message);
         return;
     };
