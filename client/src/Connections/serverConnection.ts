@@ -9,8 +9,8 @@ export default class ServerConnection {
     private socket: Socket<ServerToClientEvents, ClientToServerEvents>|null = null;
     private connectionTryCount: number = 3;
 
-    ServerConnection() {
-    }
+    serverConnection() {
+    };
 
     async tryConnect() : Promise<boolean> {
         let url = `http://${Config.hostName}:${Config.portNumber}`
@@ -19,9 +19,9 @@ export default class ServerConnection {
 
         if (connectionStatus)
             return true;
-        
+
         let tryCount = this.connectionTryCount;
-        
+
         while (!connectionStatus && tryCount != 0) {
             for(let i = 5 ; i > 0 ; i--) {
                 DisplayDriver.printOnLine(`Retrying in ${i} seconds ...`, 1);
