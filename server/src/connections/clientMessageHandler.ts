@@ -5,19 +5,18 @@ import { ascii_art } from '../ascii';
 
 export class ClientMessageHandler {
     private io: Server<ClientToServerEvents, ServerToClientEvents>;
-    // private socket: Socket<ServerToClientEvents, ClientToServerEvents>;
     private dbDriver: DatabaseDriver;
 
     constructor(io: Server<ClientToServerEvents, ServerToClientEvents>, dbDriver: DatabaseDriver) {
-        // this.socket = socket;
         this.io = io;
         this.dbDriver = dbDriver;
+        this.init();
     }
 
     init() {
         this.io.on("connection", (socket) => {
             socket.on("ascii", () => this.recvAscii());
-            socket.on("login", () => this.recvLogin());
+            socket.on("login", (data: string) => this.recvLogin(data));
             socket.on("listRoom", () => this.recvListRoom());
             socket.on("addRoom", (roomName: string) => this.recvAddRoom(roomName));
         })
@@ -27,32 +26,48 @@ export class ClientMessageHandler {
         this.io.emit("ascii", ascii_art);
     };
 
-    recvLogin() {
+    async recvLogin(data: string) {
         console.log("login received from client");
+        console.log(data);
+        let password: string = JSON.parse(data)['password'];
+        switch (password) {
+            case '':
+                let result = await this.dbDriver.getUserByUsername(JSON.parse(data)['username']);
+                if (result == "[]") { // si utilisateur est inconnu
+                    this.io.emit("login", JSON.stringify({ "result": "need_auth" }));
+                } else {
+                    this.io.emit("login", JSON.stringify({ "result": "need_pwd" }));
+                }
+                break;
+
+            default:
+                let result2 = await this.dbDriver.getUserByUsername(JSON.parse(data)['username']);
+                if (password == JSON.parse(result2)[0]['password']) { // si password OK
+                    this.io.emit("login", JSON.stringify({ "result": "ok" }));
+                } else {
+                    this.io.emit("login", JSON.stringify({ 'result': 'wrong_pwd' }));
+                }
+                break;
+        }
     }
 
-    recvListRoom() {
-        console.log("list_room from client");
-        let result = this.dbDriver.getRooms();
-        console.log(result);
-        // if (result[0] == '0') {
-        //     io.emit("listRoom", JSON.stringify({"answer":"Error while trying to list rooms"}))
-        //     throw err
-        // }
-        // let resultString = JSON.stringify(result)
-        // io.emit("listRoom", resultString)
+    async recvListRoom() {
+        console.log("listRoom from client");
+        let result = await this.dbDriver.getRooms();
+        if (result == 'error') {
+            this.io.emit("listRoom", JSON.stringify({ "result": result })); // emit l'erreur au client
+        } else {
+            this.io.emit("listRoom", result);
+        }
     }
 
-    recvAddRoom(roomName: string) {
+    async recvAddRoom(roomName: string) {
         console.log("addRoom from client");
-        let result = this.dbDriver.addRoom(roomName);
-        // console.log(result)
-        // pool.query("INSERT INTO `room` (name) VALUES (?)", [roomName], function (err, result) {
-        //     if (err) {
-        //         io.emit("addRoom", JSON.stringify({"answer":"Error while trying to add a room"}))
-        //         throw err;
-        //     }
-        //     io.emit("addRoom", JSON.stringify({"answer":"Room added"}))
-        // });
+        let result = await this.dbDriver.addRoom(roomName);
+        if (result == 'duplicate_entry') {
+            this.io.emit("addRoom", JSON.stringify({ "result": result })); // emit l'erreur au client
+        } else {
+            this.io.emit("addRoom", JSON.stringify({ "result": "success", "roomName": roomName })); // emit succès
+        }
     }
 }
