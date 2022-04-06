@@ -20,15 +20,6 @@ ________/\\\_______        __/\\\________/\\\_        _____/\\\\\\\\\____       
 io.on("connection", (socket) => {
     console.log("connection from :", socket.id)
 
-    // works when broadcast to all
-    // io.emit("noArg");
-
-    // works when broadcasting to a room
-    // io.to("r oom1").emit("basicEmit", 1, "2", Buffer.from([3]));
-});
-
-
-io.on("connection", (socket) => {
     socket.emit("ascii", ascii_art);
 
     socket.on("login", () => {

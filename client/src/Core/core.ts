@@ -4,6 +4,7 @@ import DisplayDriver from "../Display/displayDriver";
 import { ClientMessageHandler } from "../Connections/clientMessageHandler";
 import { ServerMessageHandler } from "../Connections/serverMessageHandler";
 import { Socket } from "socket.io-client";
+import { Server } from "http";
 
 enum Phase {
     load = 1,
@@ -20,22 +21,17 @@ enum ClientPhase {
 }
 
 export default class Core{
-    private connection: ServerConnection =  new ServerConnection();
+    private connection: ServerConnection;
     private clientMessageHandler: ClientMessageHandler;
     private serverMessageHandler: ServerMessageHandler;
+
     constructor() {
-      this.clientMessageHandler = new ClientMessageHandler(this.connection.getSocket());
-      this.serverMessageHandler = new ServerMessageHandler(this.connection.getSocket(), this.clientMessageHandler);
+        Config.initConfig();
+        this.connection = new ServerConnection();
+
+        this.clientMessageHandler = new ClientMessageHandler(this.connection.getSocket());
+        this.serverMessageHandler = new ServerMessageHandler(this.connection.getSocket(), this.clientMessageHandler);
     };
-
-    async init() {
-        Config.initConfig()
-        this.initServerConnection();
-    }
-
-    async initServerConnection() {
-        this.connection.tryConnect();
-    }
 
     loadConfig() {
         const args = process.argv.slice(2);

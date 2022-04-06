@@ -6,19 +6,14 @@ import {ServerToClientEvents, ClientToServerEvents} from './socketEvents'
 
 
 export default class ServerConnection {
-    private socket: Socket<ServerToClientEvents, ClientToServerEvents>|null = null;
+    private socket: Socket<ServerToClientEvents, ClientToServerEvents>;
     private connectionTryCount: number = 3;
 
-    constructor(){}
+    constructor(){
+        let url = `${Config.hostName}:${Config.portNumber}`
+        DisplayDriver.print(`Trying to connect to ${url} \n`)
 
-    async tryConnect() {
-        let url = `http://${Config.hostName}:${Config.portNumber}`
-        DisplayDriver.print(`Trying to connect to ${url}`)
-        this.connect(url);
-    }
-
-    async connect(url: string) {
-        this.socket = io(url);
+        this.socket = io(url)
     }
 
     getSocket() {
