@@ -93,7 +93,7 @@ export class ServerMessageHandler {
     }
 
     recvAddRoom(data: string) {
-
+        console.log(data)
     }
 
     recvHistory(data: string) {
@@ -109,7 +109,7 @@ export class ServerMessageHandler {
     }
 
     recvListRoom(data: string) {
-
+        console.log(JSON.parse(data))
     }
 
     recvListUsers(data: string) {
