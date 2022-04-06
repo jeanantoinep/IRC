@@ -4,8 +4,8 @@ let configFilename = "TestConfig.json"
 
 export default class Config {
 
-    static portNumber: number = 0;
-    static hostName: string = '';
+    static portNumber: number;
+    static hostName: string;
 
     static setPort(port: number) {
         this.portNumber = port;

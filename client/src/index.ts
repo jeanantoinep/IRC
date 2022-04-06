@@ -6,5 +6,5 @@ async function main() {
     coreInstance.init();
 }
 
-main()
 
+main()
