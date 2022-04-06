@@ -13,6 +13,7 @@ export interface ServerToClientEvents {
 }
 
 export interface ClientToServerEvents {
+    ascii: () => void;
     handshake: (callback: (data: string) => void) => void;
     login: (userData: string) => void; // username pour invité ou username + password pour personne enregistrée
     listRoom: () => void;

@@ -5,17 +5,16 @@ import {io, Socket} from 'socket.io-client';
 export class ClientMessageHandler {
     private socket: Socket<ServerToClientEvents, ClientToServerEvents>;
 
+    //Client data
+    private username: string = '';
+
     constructor(socket: Socket<ServerToClientEvents, ClientToServerEvents>) {
         this.socket = socket;
     };
 
-    init() {
-        // let rlDriver = DisplayDriver.getDriver();
-        // rlDriver.on('line', (input: string) => {
-        //     return this.parseMessage(input);
-        // });
-
-    };
+    public getUsername() {
+        return this.username;
+    }
 
     parseMessage(message: string) {
         if(message.startsWith('/'))
@@ -80,6 +79,14 @@ export class ClientMessageHandler {
 
         };
     };
+
+    public sendLogin(username: string, password: string = '') {
+
+    }
+
+    public sendAsciiRequest() {
+        this.socket.emit('ascii');
+    }
 
     sendRoomsListRequest() {
         this.socket.emit('listRoom');

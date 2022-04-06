@@ -33,11 +33,15 @@ export default class DisplayDriver {
         process.stdout.write(msg);
     }
 
-    static async createPrompt(message: string) {
-        let answer = new Promise((resolve, reject) => {
+    static async createPrompt(message: string) : Promise<string> {
+        let answer = new Promise<string>((resolve, reject) => {
             rl.question(message, (input) => resolve(input) );
         });
 
         return answer;
+    }
+
+    static clearTerminal() {
+        console.clear();
     }
 }

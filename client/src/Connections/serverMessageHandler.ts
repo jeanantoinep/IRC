@@ -38,18 +38,12 @@ export class ServerMessageHandler {
     }
 
     recvConnect() {
-        console.log('OK')
+        this.clientHandler.sendAsciiRequest();
     }
 
     async recvConnectError(err: Error) {
         DisplayDriver.print('Socket connection error: ' + err);
-
-        for(let i = 5 ; i > 0 ; i--) {
-            DisplayDriver.printOnLine(`Retrying in ${i} seconds ...`, 1);
-            await new Promise(resolve => setTimeout(resolve, 1000));
-        }
         DisplayDriver.print('\n');
-        this.socket.connect();
     }
 
     recvDisconnect(reason: Socket.DisconnectReason) {
@@ -61,6 +55,25 @@ export class ServerMessageHandler {
 
         if(returnData['result'] == 'need_pwd') {
             let passwd = await DisplayDriver.createPrompt('Password: ');
+        }
+
+        if(returnData['result'] == 'need_auth') {
+            let answer = await DisplayDriver.createPrompt(`User doesn't exist: do you want to claim it ? (yes/no) :`);
+
+            if(answer.startsWith('y')) {
+                let len = 0;
+                while(len < 5) {
+                    let pwd = await DisplayDriver.createPrompt(`Password :`);
+                    len = pwd.length;
+                }
+                let pwd = await DisplayDriver.createPrompt(`Password :`);
+
+                this.clientHandler.sendLogin(this.clientHandler.getUsername(), pwd);
+            }
+        }
+
+        if(returnData['result'] == 'OK') {
+            
         }
     }
 
