@@ -1,4 +1,4 @@
-import ServerConnection from "../Connections/serverConnection";
+import ServerConnection from "../connections/serverConnection";
 import Config from "../config";
 import DisplayDriver from "../Display/displayDriver";
 import { ClientMessageHandler } from "../Connections/clientMessageHandler";
@@ -12,6 +12,13 @@ enum Phase {
     chat,
 };
 
+enum ClientPhase {
+    load = 1,
+    login,
+    roomList,
+    chat,
+}
+
 export default class Core{
     private connection: ServerConnection =  new ServerConnection();
     private clientMessageHandler: ClientMessageHandler;
@@ -22,8 +29,7 @@ export default class Core{
     };
 
     async init() {
-        this.loadConfig()
-
+        Config.initConfig()
         this.initServerConnection();
     }
 
