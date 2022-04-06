@@ -29,8 +29,8 @@ io.on("connection", (socket) => {
 
 
 io.on("connection", (socket) => {
-    socket.on("connect", () => {
-        socket.emit("connect", ascii_art)
+    socket.on("ascii", () => {
+        socket.emit("ascii", ascii_art)
     })
 
     socket.on("login", () => {
