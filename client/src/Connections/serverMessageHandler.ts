@@ -12,6 +12,8 @@ export class ServerMessageHandler {
                 clientHandler: ClientMessageHandler) {
         this.socket = socket;
         this.clientHandler = clientHandler;
+
+        this.init();
     }
     
     init() {
