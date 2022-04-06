@@ -22,7 +22,7 @@ export default class Core{
         Config.initConfig();
         this.connection = new ServerConnection();
 
-        // console.log(this.connection.getSocket())
+        console.log(this.connection.getSocket())
         this.clientMessageHandler = new ClientMessageHandler(this.connection.getSocket());
         this.serverMessageHandler = new ServerMessageHandler(
                                         this.connection.getSocket(), 
