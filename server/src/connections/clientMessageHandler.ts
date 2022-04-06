@@ -54,8 +54,11 @@ export class ClientMessageHandler {
     async recvListRoom() {
         console.log("listRoom from client");
         let result = await this.dbDriver.getRooms();
+        console.log(result);
         if (result == 'error') {
             this.io.emit("listRoom", JSON.stringify({ "result": result })); // emit l'erreur au client
+        } else if (result == '[]') {
+            this.io.emit("listRoom", JSON.stringify({ "result": "no_rooms" }));
         } else {
             this.io.emit("listRoom", result);
         }

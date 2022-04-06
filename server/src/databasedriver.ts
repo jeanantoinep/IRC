@@ -46,12 +46,12 @@ export class DatabaseDriver {
 
     public async getUserByUsername(username: string): Promise<string> {
         return this.query("SELECT * FROM `user` WHERE username='" + username + "'")
-        .then((result: any) => {
-            return JSON.stringify(result)
-        })
-        .catch((error: string) => {
-            return 'error'
-        })
+            .then((result: any) => {
+                return JSON.stringify(result)
+            })
+            .catch((error: string) => {
+                return 'error'
+            })
     }
 
     public async getRooms(): Promise<string> {
