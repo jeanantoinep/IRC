@@ -3,15 +3,19 @@ import {ServerToClientEvents, ClientToServerEvents} from './socketEvents'
 import {Socket} from 'socket.io-client'
 
 import { ClientMessageHandler } from "./clientMessageHandler";
+import Core, {Phase} from '../Core/core'
 
 export class ServerMessageHandler {
     private socket: Socket<ServerToClientEvents, ClientToServerEvents>;
     private clientHandler: ClientMessageHandler;
+    private core: Core;
 
     constructor(socket: Socket<ServerToClientEvents, ClientToServerEvents>,
-                clientHandler: ClientMessageHandler) {
+                clientHandler: ClientMessageHandler,
+                core: Core) {
         this.socket = socket;
         this.clientHandler = clientHandler;
+        this.core = core;
 
         this.init();
     }
@@ -38,6 +42,7 @@ export class ServerMessageHandler {
     }
 
     recvConnect() {
+        this.core.consolePhase(Phase.login);
         this.clientHandler.sendAsciiRequest();
     }
 
@@ -54,11 +59,17 @@ export class ServerMessageHandler {
         let returnData = JSON.parse(data);
 
         if(returnData['result'] == 'need_pwd') {
-            let passwd = await DisplayDriver.createPrompt('Password: ');
+            let len = 0;
+            let passwd = '';
+            while(len < 5) {
+                passwd = await DisplayDriver.createPrompt(`Password :`);
+                len = passwd.length;
+            }
+            this.clientHandler.sendLogin(this.clientHandler.getUsername(), passwd);
         }
 
         if(returnData['result'] == 'need_auth') {
-            let answer = await DisplayDriver.createPrompt(`User doesn't exist: do you want to claim it ? (yes/no) :`);
+            let answer = await DisplayDriver.createPrompt(`Username isn't registered: do you want to claim it ? (yes/no) :`);
 
             if(answer.startsWith('y')) {
                 let len = 0;
@@ -73,7 +84,7 @@ export class ServerMessageHandler {
         }
 
         if(returnData['result'] == 'OK') {
-            
+            this.core.consolePhase(Phase.roomList);
         }
     }
 

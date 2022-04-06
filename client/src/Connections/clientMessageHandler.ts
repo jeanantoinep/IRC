@@ -81,7 +81,8 @@ export class ClientMessageHandler {
     };
 
     public sendLogin(username: string, password: string = '') {
-
+        let loginPacket = {"username": username, "password": password};
+        this.socket.emit('login', JSON.stringify(loginPacket));
     }
 
     public sendAsciiRequest() {

@@ -14,10 +14,19 @@ export default class DisplayDriver {
         return rl;
     }
 
+    static startChat() {
+        console.clear();
+        rl.prompt(true);
+    }
+
+
+    ///CHAT: Essayer avec stdin.write avec un \n à la fin, pour écrire en bas du terminal
     static chat(msg: string) {
-        process.stdout.clearLine(0);
-        process.stdout.cursorTo(0);
-        console.log(msg);
+        //process.stdout.clearLine(0);
+        //process.stdout.cursorTo(0);
+        //console.log(msg);
+
+        process.stdin.write(msg + '\n');
         rl.prompt(true);
     }
 

@@ -6,19 +6,12 @@ import { ServerMessageHandler } from "../Connections/serverMessageHandler";
 import { Socket } from "socket.io-client";
 import { Server } from "http";
 
-enum Phase {
+export enum Phase {
     load = 1,
     login,
     roomList,
     chat,
 };
-
-enum ClientPhase {
-    load = 1,
-    login,
-    roomList,
-    chat,
-}
 
 export default class Core{
     private connection: ServerConnection;
@@ -31,15 +24,26 @@ export default class Core{
 
         console.log(this.connection.getSocket())
         this.clientMessageHandler = new ClientMessageHandler(this.connection.getSocket());
-        this.serverMessageHandler = new ServerMessageHandler(this.connection.getSocket(), this.clientMessageHandler);
+        this.serverMessageHandler = new ServerMessageHandler(
+                                        this.connection.getSocket(), 
+                                        this.clientMessageHandler,
+                                        this);
     };
 
     consolePhase(arg: Phase) {
         switch (arg) {
-          case Phase.load:
-              console.clear();
-              this.connection.getSocket()
-              break;
+            case Phase.load:
+                break;
+
+            case Phase.login:
+                DisplayDriver.clearTerminal();
+                break;
+
+            case Phase.roomList:
+                DisplayDriver.clearTerminal();
+
+            case Phase.chat:
+                DisplayDriver.startChat();
 
           default:
               break;
