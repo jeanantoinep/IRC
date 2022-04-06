@@ -1,0 +1,1 @@
+INSERT INTO room VALUE ('Accueil'),('ETNA'),('Chill'),('Games');
