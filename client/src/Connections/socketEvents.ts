@@ -1,4 +1,5 @@
 export interface ServerToClientEvents {
+    ascii: (data: string) => void;
     login: (data: string) => void;
     listRoom: (data: string) => void;
     joinRoom: (data: string) => void; // room joined successfully ou erreur

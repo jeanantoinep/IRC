@@ -34,10 +34,10 @@ export default class DisplayDriver {
     }
 
     static async createPrompt(message: string) {
-    let answer = new Promise((resolve, reject) => {
-        rl.question(message, (input) => resolve(input) );
-    });
+        let answer = new Promise((resolve, reject) => {
+            rl.question(message, (input) => resolve(input) );
+        });
 
-    return answer;
-   }
+        return answer;
+    }
 }
