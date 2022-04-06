@@ -1,6 +1,8 @@
+import {cwd} from 'process'
 
-export class Config {
-    static configFilename = "TestConfig.json"
+let configFilename = "TestConfig.json"
+
+export default class Config {
 
     static portNumber: number;
     static hostName: string;
@@ -17,12 +19,22 @@ export class Config {
         //TODO: Load config.json from disk
     }
 
-    static saveConfig(filename: string) {
+    static saveConfig(filename: string = configFilename) {
+        let workingDir = process.cwd();
+        let savePath = workingDir + './' + filename;
+
+        let jsonData = JSON.stringify( {
+            "port:": this.portNumber, 
+            "host": this.hostName });
+
+        console.log("Data")
+        console.log(jsonData);
+
         //TODO: save config.json to disk
     }
 
     static printConfig() {
-        console.log(`Client mode! \nHostname: ${this.hostName}, Port: ${this.portNumber}`);
+        console.log(`CLient mode! Hostname: ${this.hostName}, Port: ${this.portNumber}`);
     }
 
 }
