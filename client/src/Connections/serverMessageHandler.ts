@@ -39,16 +39,20 @@ export class ServerMessageHandler {
     recvAsciiBanner(data: string) {
         DisplayDriver.print(data);
         DisplayDriver.print('\n');
+
+        this.core.setServerBanner(data);
+        this.core.consolePhase(Phase.login);
     }
 
     recvConnect() {
-        this.core.consolePhase(Phase.login);
+        console.log('Connection ok')
         this.clientHandler.sendAsciiRequest();
     }
 
     async recvConnectError(err: Error) {
         DisplayDriver.print('Socket connection error: ' + err);
         DisplayDriver.print('\n');
+
     }
 
     recvDisconnect(reason: Socket.DisconnectReason) {
@@ -57,33 +61,36 @@ export class ServerMessageHandler {
 
     async recvLogin(data: string) {
         let returnData = JSON.parse(data);
+        console.log('Login packet received: '+ data);
 
         if(returnData['result'] == 'need_pwd') {
             let len = 0;
             let passwd = '';
-            while(len < 5) {
+            while(len < 1) {
                 passwd = await DisplayDriver.createPrompt(`Password :`);
                 len = passwd.length;
             }
             this.clientHandler.sendLogin(this.clientHandler.getUsername(), passwd);
+            return;
         }
 
         if(returnData['result'] == 'need_auth') {
-            let answer = await DisplayDriver.createPrompt(`Username isn't registered: do you want to claim it ? (yes/no) :`);
+            let answer = await DisplayDriver.createPrompt(`Username isn't registered: do you want to claim it ? (yes/no): `);
 
             if(answer.startsWith('y')) {
                 let len = 0;
+                let pwd = '';
                 while(len < 5) {
                     let pwd = await DisplayDriver.createPrompt(`Password :`);
+                    console.log('entered password: ' + pwd)
                     len = pwd.length;
                 }
-                let pwd = await DisplayDriver.createPrompt(`Password :`);
-
+                //let pwd = await DisplayDriver.createPrompt(`Password :`);
                 this.clientHandler.sendLogin(this.clientHandler.getUsername(), pwd);
             }
         }
 
-        if(returnData['result'] == 'OK') {
+        if(returnData['result'] == 'ok') {
             this.core.consolePhase(Phase.roomList);
         }
     }
@@ -93,7 +100,7 @@ export class ServerMessageHandler {
     }
 
     recvAddRoom(data: string) {
-
+        console.log(data)
     }
 
     recvHistory(data: string) {
@@ -109,7 +116,15 @@ export class ServerMessageHandler {
     }
 
     recvListRoom(data: string) {
+        DisplayDriver.print('Rooms list:\n')
+        let roomsArray = JSON.parse(data);
 
+        roomsArray.forEach((room:any) => {
+            DisplayDriver.print(room['name'] + '\n');
+        });
+        DisplayDriver.print('\n')
+
+        DisplayDriver.startChat();
     }
 
     recvListUsers(data: string) {
