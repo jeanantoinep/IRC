@@ -14,10 +14,19 @@ export default class DisplayDriver {
         return rl;
     }
 
+    static startChat() {
+        console.clear();
+        rl.prompt(true);
+    }
+
+
+    ///CHAT: Essayer avec stdin.write avec un \n à la fin, pour écrire en bas du terminal
     static chat(msg: string) {
-        process.stdout.clearLine(0);
-        process.stdout.cursorTo(0);
-        console.log(msg);
+        //process.stdout.clearLine(0);
+        //process.stdout.cursorTo(0);
+        //console.log(msg);
+
+        process.stdin.write(msg + '\n');
         rl.prompt(true);
     }
 
@@ -33,11 +42,15 @@ export default class DisplayDriver {
         process.stdout.write(msg);
     }
 
-    static async createPrompt(message: string) {
-        let answer = new Promise((resolve, reject) => {
+    static async createPrompt(message: string) : Promise<string> {
+        let answer = new Promise<string>((resolve, reject) => {
             rl.question(message, (input) => resolve(input) );
         });
 
         return answer;
+    }
+
+    static clearTerminal() {
+        console.clear();
     }
 }

@@ -1,6 +1,7 @@
 import { Server, Socket } from "socket.io";
 import { ClientToServerEvents, ServerToClientEvents } from "./socketEvents";
 import { DatabaseDriver } from "../databasedriver";
+import { ascii_art } from '../ascii';
 
 export class ClientMessageHandler {
     private io: Server<ClientToServerEvents, ServerToClientEvents>;
@@ -25,17 +26,8 @@ export class ClientMessageHandler {
     }
 
     recvAscii() {
-        var ascii_art: string = `________/\\\_______        __/\\\________/\\\_        _____/\\\\\\\\\____        __/\\\\\\\\\\\\____        
- _____/\\\\/\\\\____        _\/\\\_______\/\\\_        ___/\\\\\\\\\\\\\__        _\/\\\////////\\\__       
-  ___/\\\//\////\\\__        _\/\\\_______\/\\\_        __/\\\/////////\\\_        _\/\\\______\//\\\_      
-   __/\\\______\//\\\_        _\/\\\_______\/\\\_        _\/\\\_______\/\\\_        _\/\\\_______\/\\\_     
-    _\//\\\______/\\\__        _\/\\\_______\/\\\_        _\/\\\\\\\\\\\\\\\_        _\/\\\_______\/\\\_    
-     __\///\\\\/\\\\/___        _\/\\\_______\/\\\_        _\/\\\/////////\\\_        _\/\\\_______\/\\\_   
-      ____\////\\\//_____        _\//\\\______/\\\__        _\/\\\_______\/\\\_        _\/\\\_______/\\\__  
-       _______\///\\\\\\__        __\///\\\\\\\\\/___        _\/\\\_______\/\\\_        _\/\\\\\\\\\\\\/___ 
-        _________\//////___        ____\/////////_____        _\///________\///__        _\////////////_____`
         this.io.emit("ascii", ascii_art);
-    }
+    };
 
     async recvLogin() {
         console.log("login received from client");
