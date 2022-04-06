@@ -1,3 +1,4 @@
+import { ClientMessageHandler } from './connections/clientMessageHandler';
 import { Core } from './core'
 import { DatabaseDriver } from './databasedriver';
 
@@ -5,8 +6,8 @@ import { DatabaseDriver } from './databasedriver';
 const core = new Core();
 const io = core.getIo();
 const dbDriver = new DatabaseDriver();
-const ascii_art: string = `
-________/\\\_______        __/\\\________/\\\_        _____/\\\\\\\\\____        __/\\\\\\\\\\\\____        
+// const clientMsg = new ClientMessageHandler(io, dbDriver);
+const ascii_art: string = `________/\\\_______        __/\\\________/\\\_        _____/\\\\\\\\\____        __/\\\\\\\\\\\\____        
  _____/\\\\/\\\\____        _\/\\\_______\/\\\_        ___/\\\\\\\\\\\\\__        _\/\\\////////\\\__       
   ___/\\\//\////\\\__        _\/\\\_______\/\\\_        __/\\\/////////\\\_        _\/\\\______\//\\\_      
    __/\\\______\//\\\_        _\/\\\_______\/\\\_        _\/\\\_______\/\\\_        _\/\\\_______\/\\\_     
@@ -14,8 +15,7 @@ ________/\\\_______        __/\\\________/\\\_        _____/\\\\\\\\\____       
      __\///\\\\/\\\\/___        _\/\\\_______\/\\\_        _\/\\\/////////\\\_        _\/\\\_______\/\\\_   
       ____\////\\\//_____        _\//\\\______/\\\__        _\/\\\_______\/\\\_        _\/\\\_______/\\\__  
        _______\///\\\\\\__        __\///\\\\\\\\\/___        _\/\\\_______\/\\\_        _\/\\\\\\\\\\\\/___ 
-        _________\//////___        ____\/////////_____        _\///________\///__        _\////////////_____
-`
+        _________\//////___        ____\/////////_____        _\///________\///__        _\////////////_____`
 
 io.on("connection", (socket) => {
     console.log("connection from :", socket.id)
@@ -27,12 +27,19 @@ io.on("connection", (socket) => {
     // io.to("r oom1").emit("basicEmit", 1, "2", Buffer.from([3]));
 });
 
+io.on("test", (socket) => {
+    socket.on("listRoom", () => {
+        console.log("list_room from client ON test");
+    })
+})
 
 io.on("connection", (socket) => {
-    socket.emit("ascii", ascii_art);
+    socket.on("ascii", () => {
+        socket.emit("ascii", ascii_art);
+    })
 
     socket.on("login", () => {
-        console.log("login received from client")
+        console.log("login received from client");
     });
 
     socket.on("listRoom", () => {
