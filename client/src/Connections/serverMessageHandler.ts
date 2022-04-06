@@ -15,9 +15,10 @@ export class ServerMessageHandler {
 
         this.init();
     }
-    
+
     init() {
         this.socket.on('addFriend', (data:string) => this.recvAddFriend(data));
+        this.socket.on('acceptFriend', (data: string) => this.recvAcceptFriend(data));
         this.socket.on('addRoom', (data:string) => this.recvAddRoom(data));
         this.socket.on('connect', ()=> this.recvConnect());
         this.socket.on('connect_error', async (err: Error) => await this.recvConnectError(err));
@@ -30,6 +31,7 @@ export class ServerMessageHandler {
         this.socket.on('login', (data: string) => this.recvLogin(data))
         this.socket.on('msg', (data:string) => this.recvMessage(data));
         this.socket.on('ascii', (data: string) => this.recvAsciiBanner(data));
+
     }
 
     recvAsciiBanner(data: string) {
@@ -65,7 +67,11 @@ export class ServerMessageHandler {
     }
 
     recvAddFriend(data: string) {
-        
+
+    }
+
+    recvAcceptFriend(data:string){
+
     }
 
     recvAddRoom(data: string) {

@@ -67,6 +67,9 @@ export class ClientMessageHandler {
                 this.sendAddFriendRequest();
                 break;
 
+            case '/accept':
+              if(this.checkArgc())
+
             case '/pm':
                 commandArgs = command.split(' ');
                 if(this.checkArgc(commandArgs, 3))
@@ -154,6 +157,18 @@ export class ClientMessageHandler {
         this.socket.emit('addFriend', userName);
         return;
     };
+
+    sendAcceptFriendRequest(data: string = '') {
+        if(data == '') {
+            DisplayDriver.print('Invalid command /accept \n');
+            DisplayDriver.print('Usage: /accept {user_name}\n');
+            return;
+        };
+
+        this.socket.emit('acceptFriend', data);
+        return;
+
+    }
 
     sendMessage(message: string) {
         this.socket.emit('msg', message);
