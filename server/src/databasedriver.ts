@@ -1,7 +1,7 @@
 import { createPool, Pool } from 'mysql2'
 
 
-interface RoomsList {
+interface Room {
     id: number;
     name: string;
 }
@@ -44,33 +44,24 @@ export class DatabaseDriver {
         });
     }
 
-    public async getRooms(): Promise<RoomsList[]> {
-        let res = await this.query("SELECT * FROM `room`") as RoomsList[];
-        console.log(res)
-        return res;
+    public async getRooms(): Promise<string> {
+        return this.query("SELECT * FROM `room`")
+            .then((result: any) => {
+                return JSON.stringify(result)
+            })
+            .catch((error: string) => {
+                return 'error'
+            })
+
     }
 
-    // public getRooms() {
-    //     let res: RoomsList[] = [];
-    //     this.pool.query("SELECT * FROM `room`", function (err, result) {
-    //         if (err) {
-    //             return {"answer":'0'}
-    //         }
-    //         res = result as RoomsList[]
-    //         console.log(res)
-
-    //     });
-
-    //     return res
-    // }
-
-    public async addRoom(roomName: string) {
-        // let res = await this.query("INSERT INTO `room` (name) VALUES (?)") as ;
-        let res = await this.query("INSERT INTO `room` (name) VALUES ('" + roomName + "')");
-        if (res != NaN)
-            console.log(res)
-        else
-            console.log("Oh BELLE l'erreur là")
-        return res
+    public async addRoom(roomName: string): Promise<string | number> {
+        return this.query("INSERT INTO `room` (name) VALUES ('" + roomName + "')")
+            .then((result: any) => {
+                return result['insertId'] as number
+            })
+            .catch((error: string) => {
+                return 'duplicate_entry'
+            });
     }
 }
