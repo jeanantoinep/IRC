@@ -16,11 +16,11 @@ export interface ClientToServerEvents {
     login: (userData: string) => void; // username pour invité ou username + password pour personne enregistrée
     listRoom: () => void;
     joinRoom: (roomName: string) => void;
-    history: (data: string) => void; // 50 msg par défaut ? sinon nombre précisé
+    history: (count: number) => void; // 50 msg par défaut ? sinon nombre précisé
     msg: (data: string) => void;
     leaveRoom: () => void;
     addRoom: (roomName: string) => void;
     listUser: () => void;
-    pm: (data: string) => void; // nom user + message
+    pm: (userName: string, message: string) => void; // nom user + message
     addFriend: (username: string) => void;
 }
