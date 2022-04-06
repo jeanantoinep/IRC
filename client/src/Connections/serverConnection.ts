@@ -10,9 +10,8 @@ export default class ServerConnection {
     private connectionTryCount: number = 3;
 
     constructor(){
-        let url = `${Config.hostName}:${Config.portNumber}`
+        let url = `http://${Config.hostName}:${Config.portNumber}`
         DisplayDriver.print(`Trying to connect to ${url} \n`)
-
         this.socket = io(url)
     }
 

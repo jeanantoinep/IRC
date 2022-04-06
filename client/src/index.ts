@@ -1,8 +1,8 @@
 import Core from "./Core/core";
 
 async function main() {
-    let coreInstance = new Core;
+    let coreInstance = new Core();
 }
 
 
-main()
+main();

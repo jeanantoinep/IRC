@@ -29,32 +29,10 @@ export default class Core{
         Config.initConfig();
         this.connection = new ServerConnection();
 
+        console.log(this.connection.getSocket())
         this.clientMessageHandler = new ClientMessageHandler(this.connection.getSocket());
         this.serverMessageHandler = new ServerMessageHandler(this.connection.getSocket(), this.clientMessageHandler);
     };
-
-    loadConfig() {
-        const args = process.argv.slice(2);
-        args.forEach((argument, index) => {
-            if(!argument.startsWith('-'))
-                return;
-            switch (argument) {
-                case '-p':
-                    if(isNaN(Number(args[index+1]))) {
-                        console.log('Invalid port number: ' + args[index+1])
-                        process.exit(1);
-                    }
-                    else Config.setPort(Number(args[index+1]));
-                    break;
-                case '-h':
-                    Config.setHostname(args[index+1]);
-                    break;
-                default:
-                    console.log('Invalid argument ' + argument);
-                    break;
-              }
-        })
-    }
 
     consolePhase(arg: Phase) {
         switch (arg) {
