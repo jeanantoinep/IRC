@@ -5,21 +5,18 @@ import { ascii_art } from '../ascii';
 
 export class ClientMessageHandler {
     private io: Server<ClientToServerEvents, ServerToClientEvents>;
-    // private socket: Socket<ServerToClientEvents, ClientToServerEvents>;
     private dbDriver: DatabaseDriver;
 
     constructor(io: Server<ClientToServerEvents, ServerToClientEvents>, dbDriver: DatabaseDriver) {
-        // this.socket = socket;
         this.io = io;
         this.dbDriver = dbDriver;
-
         this.init();
     }
 
     init() {
         this.io.on("connection", (socket) => {
             socket.on("ascii", () => this.recvAscii());
-            socket.on("login", () => this.recvLogin());
+            socket.on("login", (data: string) => this.recvLogin(data));
             socket.on("listRoom", () => this.recvListRoom());
             socket.on("addRoom", (roomName: string) => this.recvAddRoom(roomName));
         })
@@ -29,8 +26,29 @@ export class ClientMessageHandler {
         this.io.emit("ascii", ascii_art);
     };
 
-    async recvLogin() {
+    async recvLogin(data: string) {
         console.log("login received from client");
+        console.log(data);
+        let password: string = JSON.parse(data)['password'];
+        switch (password) {
+            case '':
+                let result = await this.dbDriver.getUserByUsername(JSON.parse(data)['username']);
+                if (result == "[]") { // si utilisateur est inconnu
+                    this.io.emit("login", JSON.stringify({ "result": "need_auth" }));
+                } else {
+                    this.io.emit("login", JSON.stringify({ "result": "need_pwd" }));
+                }
+                break;
+
+            default:
+                let result2 = await this.dbDriver.getUserByUsername(JSON.parse(data)['username']);
+                if (password == JSON.parse(result2)[0]['password']) { // si password OK
+                    this.io.emit("login", JSON.stringify({ "result": "ok" }));
+                } else {
+                    this.io.emit("login", JSON.stringify({ 'result': 'wrong_pwd' }));
+                }
+                break;
+        }
     }
 
     async recvListRoom() {

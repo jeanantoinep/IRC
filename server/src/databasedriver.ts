@@ -1,10 +1,10 @@
 import { createPool, Pool } from 'mysql2'
 
 
-interface Room {
-    id: number;
-    name: string;
-}
+// interface Room {
+//     id: number;
+//     name: string;
+// }
 
 
 export class DatabaseDriver {
@@ -44,6 +44,16 @@ export class DatabaseDriver {
         });
     }
 
+    public async getUserByUsername(username: string): Promise<string> {
+        return this.query("SELECT * FROM `user` WHERE username='" + username + "'")
+        .then((result: any) => {
+            return JSON.stringify(result)
+        })
+        .catch((error: string) => {
+            return 'error'
+        })
+    }
+
     public async getRooms(): Promise<string> {
         return this.query("SELECT * FROM `room`")
             .then((result: any) => {
@@ -52,7 +62,6 @@ export class DatabaseDriver {
             .catch((error: string) => {
                 return 'error'
             })
-
     }
 
     public async addRoom(roomName: string): Promise<string | number> {
