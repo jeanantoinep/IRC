@@ -1,31 +1,54 @@
 import { stdout, stdin } from 'process';
 import readline from 'readline'
 
-let rl : readline.Interface = readline.createInterface({
-    input: stdin,
-    output: stdout,
-    prompt: '> ',
-    terminal: false,
-});
+process.stdin.setRawMode(true);
+
+function createReadlineInterface() : readline.Interface {
+    return readline.createInterface({
+        input: stdin,
+        output: stdout,
+        prompt: '> ',
+        terminal: true,
+    });
+}
+
+function destroyReadlineInterface(rl: readline.Interface) {
+    rl.close;
+}
+
+process.stdin.on('SIGTERM', (data: Buffer) => {
+
+    //if(data == '\n')
+    process.stdout.write(data)
+})
+
+process.stdin.on('data', (data: Buffer) => {
+
+    //if(data == '\n')
+    process.stdout.write(data)
+})
 
 export default class DisplayDriver {
+    static rl: readline.Interface = createReadlineInterface();
 
     static shouldPrompt: boolean = false;
 
     static getDriver() {
-        return rl;
+        return this.rl;
     }
 
     static pauseInput() {
-        rl.pause();
+        this.rl.pause();
         this.shouldPrompt = false;
     }
 
     static resumeInput() {
-        rl.resume();
+        this.print('>');
+        this.rl.resume();
     }
     static enableInput() {
-        rl.prompt(true);
+        this.print('>');
+        this.rl.prompt(true);
         this.shouldPrompt = true;
     }
 
@@ -51,8 +74,8 @@ export default class DisplayDriver {
         stdout.cursorTo(0);
         //console.log(msg);
 
-        process.stdin.write(msg + '\n');
-        rl.prompt(true);
+        process.stdout.write(msg + '\n');
+        this.rl.prompt(true);
     }
 
     static printOnLine(msg: string, line: number = 1) {
@@ -73,13 +96,14 @@ export default class DisplayDriver {
         stdout.write(msg);
 
         if(this.shouldPrompt) {
-            rl.prompt(true);
+            this.rl.prompt(true);
         }
     }
 
     static async createPrompt(message: string) {
+        //this.print(message)
         let answer =  await new Promise<string>((resolve, reject) => {
-            rl.question(message, (input) => {
+            this.rl.question(message, (input) => {
                 resolve(input);    
             });
         });
