@@ -125,11 +125,20 @@ export class ServerMessageHandler {
     }
 
     recvJoinRoom(data: string) {
+        console.log(data)
+        let returnData = JSON.parse(data);
 
+        if(returnData['result'] == 'ok') {
+            this.core.consolePhase(Phase.chat);
+            return;
+        }
+
+        if(returnData['result'] == 'room_unknown')
+            DisplayDriver.print(`Room ${returnData['room_name']} doesn't exist.\n`);
     }
 
     recvLeaveRoom(data: string) {
-
+        this.core.consolePhase(Phase.roomList);
     }
 
     recvListRoom(data: string) {
@@ -142,11 +151,13 @@ export class ServerMessageHandler {
             DisplayDriver.print('  ' + room['name'] + '  ');
             column++;
 
-            if(column == 2)
+            if(column == 2) {
                 DisplayDriver.print('\n');
+                column = 0;
+            }
+
         });
         DisplayDriver.print('\n')
-
         DisplayDriver.enableInput();
     }
 
