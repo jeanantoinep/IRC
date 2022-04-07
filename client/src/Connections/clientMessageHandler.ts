@@ -245,7 +245,7 @@ export class ClientMessageHandler {
     };
 
     public sendMessage(message: string) {
-        this.socket.emit('msg', message);
+        this.socket.emit('msg', JSON.stringify({"room_name":this.roomName,"message":message}));
         return;
     };
 
