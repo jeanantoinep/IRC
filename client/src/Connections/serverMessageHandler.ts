@@ -3,15 +3,19 @@ import {ServerToClientEvents, ClientToServerEvents} from './socketEvents'
 import {Socket} from 'socket.io-client'
 
 import { ClientMessageHandler } from "./clientMessageHandler";
+import Core, {Phase} from '../Core/core'
 
 export class ServerMessageHandler {
     private socket: Socket<ServerToClientEvents, ClientToServerEvents>;
     private clientHandler: ClientMessageHandler;
+    private core: Core;
 
     constructor(socket: Socket<ServerToClientEvents, ClientToServerEvents>,
-                clientHandler: ClientMessageHandler) {
+                clientHandler: ClientMessageHandler,
+                core: Core) {
         this.socket = socket;
         this.clientHandler = clientHandler;
+        this.core = core;
 
         this.init();
     }
@@ -37,21 +41,20 @@ export class ServerMessageHandler {
     recvAsciiBanner(data: string) {
         DisplayDriver.print(data);
         DisplayDriver.print('\n');
+
+        this.core.setServerBanner(data);
+        this.core.consolePhase(Phase.login);
     }
 
     recvConnect() {
-        console.log('OK')
+        console.log('Connection ok')
+        this.clientHandler.sendAsciiRequest();
     }
 
     async recvConnectError(err: Error) {
         DisplayDriver.print('Socket connection error: ' + err);
-
-        for(let i = 5 ; i > 0 ; i--) {
-            DisplayDriver.printOnLine(`Retrying in ${i} seconds ...`, 1);
-            await new Promise(resolve => setTimeout(resolve, 1000));
-        }
         DisplayDriver.print('\n');
-        this.socket.connect();
+
     }
 
     recvDisconnect(reason: Socket.DisconnectReason) {
@@ -60,9 +63,59 @@ export class ServerMessageHandler {
 
     async recvLogin(data: string) {
         let returnData = JSON.parse(data);
+        console.log('Login packet received: '+ data);
 
         if(returnData['result'] == 'need_pwd') {
-            let passwd = await DisplayDriver.createPrompt('Password: ');
+            let len = 0;
+            let passwd = '';
+            while(len < 1) {
+                passwd = await DisplayDriver.createPrompt(`Password :`);
+                len = passwd.length;
+            }
+            this.clientHandler.sendLoginRequest(this.clientHandler.getUsername(), passwd);
+            return;
+        }
+
+        if(returnData['result'] == 'need_auth') {
+            let answer = await DisplayDriver.createPrompt(`Username isn't registered: do you want to claim it ? (yes/no): `);
+
+            if(answer.startsWith('y')) {
+                let len = 0;
+                let pwd = '';
+                while(len < 5) {
+                    let pwd = await DisplayDriver.createPrompt(`Password :`);
+                    console.log('entered password: ' + pwd)
+                    len = pwd.length;
+                }
+                //let pwd = await DisplayDriver.createPrompt(`Password :`);
+                this.clientHandler.sendLoginRequest(this.clientHandler.getUsername(), pwd);
+                return;
+            }
+
+            this.clientHandler.sendAnonymousLoginRequest(this.clientHandler.getUsername());
+
+        }
+
+        if(returnData['result'] == 'wrong_pwd'){
+            DisplayDriver.print('Invalid password !\n');
+            this.core.startLoginPhase();
+        }
+
+        if(returnData['result'] == 'ok') {
+            this.core.consolePhase(Phase.roomList);
+        }
+    }
+
+    async recvAnonymousLogin(data: string) {
+        let returnData = JSON.parse(data);
+        if(returnData['result'] == 'ok') {
+            this.core.consolePhase(Phase.roomList);
+        }
+
+        if(returnData['result'] == 'login_exists') {
+            DisplayDriver.print('Username is already in use ! Please pick another one')
+            let answer = await DisplayDriver.createPrompt(`Username: `);
+
         }
     }
 
@@ -75,7 +128,7 @@ export class ServerMessageHandler {
     }
 
     recvAddRoom(data: string) {
-
+        console.log(data)
     }
 
     recvHistory(data: string) {
@@ -83,19 +136,48 @@ export class ServerMessageHandler {
     }
 
     recvJoinRoom(data: string) {
+        console.log(data)
+        let returnData = JSON.parse(data);
 
+        if(returnData['result'] == 'ok') {
+            this.core.consolePhase(Phase.chat);
+            this.clientHandler.setRoomName(returnData['room_name']);
+            return;
+        }
+
+        if(returnData['result'] == 'room_unknown')
+            DisplayDriver.print(`Room ${returnData['room_name']} doesn't exist.\n`);
     }
 
     recvLeaveRoom(data: string) {
+        this.core.consolePhase(Phase.roomList);
 
+        DisplayDriver.pauseInput();
     }
 
     recvListRoom(data: string) {
+        DisplayDriver.print('Rooms list:\n')
+        let roomsArray = JSON.parse(data);
 
+        let column = 0;
+
+        roomsArray.forEach((room:any) => {
+            DisplayDriver.print('  ' + room['name'] + '  ');
+            column++;
+
+            if(column == 2) {
+                DisplayDriver.print('\n');
+                column = 0;
+            }
+
+        });
+        DisplayDriver.print('\n')
+        if(!DisplayDriver.shouldPrompt)
+            DisplayDriver.enableInput();
     }
 
     recvListUsers(data: string) {
-
+        DisplayDriver.print(data);
     }
 
     recvMessage(messageData: string) {

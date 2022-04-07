@@ -1,12 +1,6 @@
 import { createPool, Pool } from 'mysql2'
 
 
-interface RoomsList {
-    id: number;
-    name: string;
-}
-
-
 export class DatabaseDriver {
     acceptFriend(friendName: string) {
       throw new Error("Method not implemented.");
@@ -47,33 +41,43 @@ export class DatabaseDriver {
         });
     }
 
-    public async getRooms(): Promise<RoomsList[]> {
-        let res = await this.query("SELECT * FROM `room`") as RoomsList[];
-        console.log(res)
-        return res;
+    public async getUserByUsername(username: string): Promise<string> {
+        return this.query("SELECT * FROM `user` WHERE username='" + username + "'")
+            .then((result: any) => {
+                return JSON.stringify(result)
+            })
+            .catch((error: string) => {
+                return 'error'
+            })
     }
 
-    // public getRooms() {
-    //     let res: RoomsList[] = [];
-    //     this.pool.query("SELECT * FROM `room`", function (err, result) {
-    //         if (err) {
-    //             return {"answer":'0'}
-    //         }
-    //         res = result as RoomsList[]
-    //         console.log(res)
+    public async getRooms(): Promise<string> {
+        return this.query("SELECT * FROM `room` ORDER BY name")
+            .then((result: any) => {
+                return JSON.stringify(result)
+            })
+            .catch((error: string) => {
+                return 'error'
+            })
+    }
 
-    //     });
+    public async getRoomByName(roomName: string): Promise<string> {
+        return this.query("SELECT * FROM `room` WHERE name='" + roomName + "'")
+            .then((result: any) => {
+                return JSON.stringify(result)
+            })
+            .catch((error: string) => {
+                return 'error'
+            })
+    }
 
-    //     return res
-    // }
-
-    public async addRoom(roomName: string) {
-        // let res = await this.query("INSERT INTO `room` (name) VALUES (?)") as ;
-        let res = await this.query("INSERT INTO `room` (name) VALUES ('" + roomName + "')");
-        if (res != NaN)
-            console.log(res)
-        else
-            console.log("Oh BELLE l'erreur là")
-        return res
+    public async addRoom(roomName: string): Promise<string | number> {
+        return this.query("INSERT INTO `room` (name) VALUES ('" + roomName + "')")
+            .then((result: any) => {
+                return result['insertId'] as number
+            })
+            .catch((error: string) => {
+                return 'duplicate_entry'
+            });
     }
 }

@@ -1,67 +1,129 @@
 import { Server, Socket } from "socket.io";
 import { ClientToServerEvents, ServerToClientEvents } from "./socketEvents";
 import { DatabaseDriver } from "../databasedriver";
+import { ascii_art } from '../ascii';
+
 
 export class ClientMessageHandler {
     private io: Server<ClientToServerEvents, ServerToClientEvents>;
-    // private socket: Socket<ServerToClientEvents, ClientToServerEvents>;
     private dbDriver: DatabaseDriver;
 
     constructor(io: Server<ClientToServerEvents, ServerToClientEvents>, dbDriver: DatabaseDriver) {
-        // this.socket = socket;
         this.io = io;
         this.dbDriver = dbDriver;
+        this.init();
     }
 
     init() {
         this.io.on("connection", (socket) => {
-            socket.on("ascii", () => this.recvAscii());
-            socket.on("login", () => this.recvLogin());
-            socket.on("listRoom", () => this.recvListRoom());
-            socket.on("addRoom", (roomName: string) => this.recvAddRoom(roomName));
+            socket.on("ascii", () => this.recvAscii(socket));
+            socket.on("anonymousLogin", (userData: string) => this.recvAnonymousLogin(userData, socket));
+            socket.on("login", (userData: string) => this.recvLogin(userData, socket));
+            socket.on("listRoom", () => this.recvListRoom(socket));
+            socket.on("addRoom", (roomName: string) => this.recvAddRoom(roomName, socket));
+            socket.on("joinRoom", (roomName: string) => this.recvJoinRoom(roomName, socket));
+            socket.on("listUser", (roomName: string) => this.recvListUser(roomName, socket));
+            socket.on("leaveRoom", (roomName: string) => this.recvLeaveRoom(roomName, socket));
         })
     }
 
-    recvAscii() {
-        var ascii_art: string = `________/\\\_______        __/\\\________/\\\_        _____/\\\\\\\\\____        __/\\\\\\\\\\\\____
- _____/\\\\/\\\\____        _\/\\\_______\/\\\_        ___/\\\\\\\\\\\\\__        _\/\\\////////\\\__
-  ___/\\\//\////\\\__        _\/\\\_______\/\\\_        __/\\\/////////\\\_        _\/\\\______\//\\\_
-   __/\\\______\//\\\_        _\/\\\_______\/\\\_        _\/\\\_______\/\\\_        _\/\\\_______\/\\\_
-    _\//\\\______/\\\__        _\/\\\_______\/\\\_        _\/\\\\\\\\\\\\\\\_        _\/\\\_______\/\\\_
-     __\///\\\\/\\\\/___        _\/\\\_______\/\\\_        _\/\\\/////////\\\_        _\/\\\_______\/\\\_
-      ____\////\\\//_____        _\//\\\______/\\\__        _\/\\\_______\/\\\_        _\/\\\_______/\\\__
-       _______\///\\\\\\__        __\///\\\\\\\\\/___        _\/\\\_______\/\\\_        _\/\\\\\\\\\\\\/___
-        _________\//////___        ____\/////////_____        _\///________\///__        _\////////////_____`
-        this.io.emit("ascii", ascii_art);
+    recvAscii(socket: Socket) {
+        this.io.to(socket.id).emit("ascii", ascii_art);
+    };
+
+    async recvAnonymousLogin(data: string, socket: Socket) {
+        console.log("anonymous login from client", socket.id);
+        let result = await this.dbDriver.getUserByUsername(JSON.parse(data)['username']);
+        if (result != "[]") {
+            this.io.to(socket.id).emit("anonymousLogin", JSON.stringify({ "result": "login_exists" }));
+        } else {
+            this.io.to(socket.id).emit("anonymousLogin", JSON.stringify({ "result": "ok" }));
+            socket.data['username'] = JSON.parse(result)[0]['username'];
+        }
     }
 
-    recvLogin() {
-        console.log("login received from client");
+    async recvLogin(data: string, socket: Socket) {
+        console.log("login from client", socket.id);
+        let password: string = JSON.parse(data)['password'];
+        switch (password) {
+            case '': // no password transmitted
+                let result = await this.dbDriver.getUserByUsername(JSON.parse(data)['username']);
+                if (result == "[]") { // if user is unknown
+                    this.io.to(socket.id).emit("login", JSON.stringify({ "result": "need_auth" }));
+                } else { // user is already registered
+                    this.io.to(socket.id).emit("login", JSON.stringify({ "result": "need_pwd" }));
+                }
+                break;
+
+            default:
+                let result2 = await this.dbDriver.getUserByUsername(JSON.parse(data)['username']);
+                if (password == JSON.parse(result2)[0]['password']) { // if password is OK
+                    this.io.to(socket.id).emit("login", JSON.stringify({ "result": "ok" }));
+                    socket.data['username'] = JSON.parse(result2)[0]['username'];
+                } else {
+                    this.io.to(socket.id).emit("login", JSON.stringify({ 'result': 'wrong_pwd' }));
+                }
+                break;
+        }
     }
 
-    recvListRoom() {
-        console.log("list_room from client");
-        let result = this.dbDriver.getRooms();
-        console.log(result);
-        // if (result[0] == '0') {
-        //     io.emit("listRoom", JSON.stringify({"answer":"Error while trying to list rooms"}))
-        //     throw err
-        // }
-        // let resultString = JSON.stringify(result)
-        // io.emit("listRoom", resultString)
+    async recvListRoom(socket: Socket) {
+        console.log("listRoom from client", socket.data['username']);
+        let result = await this.dbDriver.getRooms();
+        if (result == 'error') {
+            this.io.to(socket.id).emit("listRoom", JSON.stringify({ "result": result })); // emit error to client
+        } else if (result == '[]') {
+            this.io.to(socket.id).emit("listRoom", JSON.stringify({ "result": "no_rooms" }));
+        } else {
+            this.io.to(socket.id).emit("listRoom", result);
+        }
     }
 
-    recvAddRoom(roomName: string) {
-        console.log("addRoom from client");
-        let result = this.dbDriver.addRoom(roomName);
-        // console.log(result)
-        // pool.query("INSERT INTO `room` (name) VALUES (?)", [roomName], function (err, result) {
-        //     if (err) {
-        //         io.emit("addRoom", JSON.stringify({"answer":"Error while trying to add a room"}))
-        //         throw err;
-        //     }
-        //     io.emit("addRoom", JSON.stringify({"answer":"Room added"}))
-        // });
+    async recvAddRoom(roomName: string, socket: Socket) {
+        console.log("addRoom from client", socket.data['username']);
+        let result = await this.dbDriver.addRoom(roomName);
+        if (result == 'duplicate_entry') {
+            this.io.to(socket.id).emit("addRoom", JSON.stringify({ "result": "room_exists", "room_name": roomName })); // emit error to client
+        } else {
+            this.io.to(socket.id).emit("addRoom", JSON.stringify({ "result": "success", "room_name": roomName }));
+        }
+    }
+
+    async recvJoinRoom(roomName: string, socket: Socket) {
+        console.log("joinRoom from client", socket.data['username']);
+        let result = await this.dbDriver.getRoomByName(roomName);
+        if (result != "[]") {
+            try {
+                socket.join(roomName);
+                this.io.to(socket.id).emit("joinRoom", JSON.stringify({ "result": "ok", "room_name": roomName }));
+            } catch (e) {
+                console.log(e);
+                this.io.to(socket.id).emit("joinRoom", JSON.stringify({ "result": "error", "room_name": roomName }));
+            }
+        } else {
+            this.io.to(socket.id).emit("joinRoom", JSON.stringify({ "result": "room_unknown", "room_name": roomName }));
+        }
+    }
+
+    async recvListUser(roomName: string, socket: Socket) {
+        console.log("listUser from client", socket.data['username']);
+        var roomUsers = await this.io.in(roomName).fetchSockets();
+        var usernames: string[] = [];
+        roomUsers.forEach(element => {
+            usernames.push(element.data['username']);
+        });
+        this.io.to(socket.id).emit("listUser", JSON.stringify({ "usernames": usernames }));
+    }
+
+    recvLeaveRoom(roomName: string, socket: Socket) {
+        console.log("leaveRoom from client", socket.data['username']);
+        try {
+            socket.leave(roomName);
+            this.io.to(socket.id).emit("leaveRoom", JSON.stringify({ "result": "ok", "room_name": roomName }));
+        } catch (e) {
+            console.log(e);
+            this.io.to(socket.id).emit("leaveRoom", JSON.stringify({ "result": "error", "room_name": roomName }));
+        }
     }
 
     recvAcceptFriend(friendName: string){

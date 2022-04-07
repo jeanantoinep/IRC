@@ -1,5 +1,6 @@
 export interface ServerToClientEvents {
     ascii: (data: string) => void; // ascii buffer
+    anonymousLogin: (data: string) => void;
     login: (data: string) => void;
     listRoom: (data: string) => void;
     joinRoom: (data: string) => void; // room joined successfully ou erreur
@@ -15,14 +16,15 @@ export interface ServerToClientEvents {
 export interface ClientToServerEvents {
     ascii: () => void;
     handshake: (callback: (data: string) => void) => void;
-    login: (userData: string) => void; // username pour invité ou username + password pour personne enregistrée
+    anonymousLogin: (userData: string) => void; // pour invité
+    login: (userData: string) => void; // username + password pour personne enregistrée
     listRoom: () => void;
     joinRoom: (roomName: string) => void;
     history: (data: string) => void; // 50 msg par défaut ? sinon nombre précisé
     msg: (data: string) => void;
-    leaveRoom: () => void;
+    leaveRoom: (roomName: string) => void;
     addRoom: (roomName: string) => void;
-    listUser: () => void;
+    listUser: (roomName: string) => void;
     pm: (data: string) => void; // nom user + message
     addFriend: (username: string) => void;
 }

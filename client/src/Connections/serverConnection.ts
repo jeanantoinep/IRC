@@ -12,7 +12,9 @@ export default class ServerConnection {
     constructor(){
         let url = `http://${Config.hostName}:${Config.portNumber}`
         DisplayDriver.print(`Trying to connect to ${url} \n`)
-        this.socket = io(url)
+        this.socket = io(url, {
+            'reconnectionAttempts': 3
+        })
     }
 
     getSocket() {
