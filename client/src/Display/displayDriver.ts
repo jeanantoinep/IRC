@@ -19,6 +19,14 @@ export default class DisplayDriver {
         rl.prompt(true);
     }
 
+    static pauseInput() {
+        rl.pause();
+    }
+
+    static resumeInput() {
+        rl.resume();
+    }
+
 
     ///CHAT: Essayer avec stdin.write avec un \n à la fin, pour écrire en bas du terminal
     static chat(msg: string) {

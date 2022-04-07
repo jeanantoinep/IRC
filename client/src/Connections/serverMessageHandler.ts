@@ -99,6 +99,19 @@ export class ServerMessageHandler {
         }
     }
 
+    async recvAnonymousLogin(data: string) {
+        let returnData = JSON.parse(data);
+        if(returnData['result'] == 'ok') {
+            this.core.consolePhase(Phase.roomList);
+        }
+
+        if(returnData['result'] == 'login_exists') {
+            DisplayDriver.print('Username is already in use ! Please pick another one')
+            let answer = await DisplayDriver.createPrompt(`Username: `);
+
+        }
+    }
+
     recvAddFriend(data: string) {
         
     }

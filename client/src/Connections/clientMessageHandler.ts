@@ -25,6 +25,20 @@ export class ClientMessageHandler {
         return this.username;
     }
 
+    public setPhase(phase: Phase) {
+        switch(phase){
+            case Phase.roomList:
+                this.phaseCommandHandler = this.roomListCommandHandler;
+                break;
+
+            case Phase.chat:
+                this.phaseCommandHandler = this.chatRoomCommandHandler;
+
+            default:
+                break;
+        }
+    }
+
     parseMessage(message: string) {
         if(message.startsWith('/'))
             return this.phaseCommandHandler(message);
@@ -36,7 +50,7 @@ export class ClientMessageHandler {
         return (args.length == count);
     };
 
-    parseCommand(command: string) {
+    roomListCommandHandler(command: string) {
         let commandArgs = command.split(' ', 2);
 
         switch(commandArgs[0]) {
@@ -44,6 +58,32 @@ export class ClientMessageHandler {
                 this.sendRoomsListRequest();
                 break;
 
+            case '/join' :
+                if(this.checkArgc(commandArgs, 2))
+                    this.sendJoinRequest(commandArgs[1])
+                break;
+
+            case '/create':
+                if(this.checkArgc(commandArgs, 2))
+                    this.sendCreateRoomRequest(commandArgs[1]);
+                this.sendCreateRoomRequest();
+                break;
+
+            case '/addRoom':
+                this.sendAddRoomRequest(commandArgs[1]);
+            break;
+
+            default:
+                DisplayDriver.print(`You can't use ${commandArgs[0]} in the room selection !S \n`);
+                break;
+        }
+
+    }
+
+    chatRoomCommandHandler(command: string) {
+        let commandArgs = command.split(' ', 2);
+
+        switch(commandArgs[0]) {
             case '/join' :
                 if(this.checkArgc(commandArgs, 2))
                     this.sendJoinRequest(commandArgs[1])
@@ -57,12 +97,6 @@ export class ClientMessageHandler {
 
             case '/leave':
                 this.sendLeaveRequest();
-                break;
-
-            case '/create':
-                if(this.checkArgc(commandArgs, 2))
-                    this.sendCreateRoomRequest(commandArgs[1]);
-                this.sendCreateRoomRequest();
                 break;
 
             case '/users':
@@ -82,16 +116,15 @@ export class ClientMessageHandler {
                 this.sendPrivateMessageRequest();
                 break;
 
-            case '/addRoom':
-                this.sendAddRoomRequest(commandArgs[1]);
-            break;
-
-
             default:
                 DisplayDriver.print(`Invalid command ${commandArgs[0]} \n`);
                 break;
 
         };
+    }
+
+    parseCommand(command: string) {
+        DisplayDriver.print(`Invalid command ${command} \n`);
     };
 
     public sendLoginRequest(username: string, password: string = '') {
