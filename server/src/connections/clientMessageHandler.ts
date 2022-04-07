@@ -22,9 +22,38 @@ export class ClientMessageHandler {
             socket.on("listRoom", () => this.recvListRoom(socket));
             socket.on("addRoom", (roomName: string) => this.recvAddRoom(roomName, socket));
             socket.on("joinRoom", (roomName: string) => this.recvJoinRoom(roomName, socket));
+            socket.on("msg", (data: string) => this.recvMsg(data, socket));
             socket.on("listUser", (roomName: string) => this.recvListUser(roomName, socket));
             socket.on("leaveRoom", (roomName: string) => this.recvLeaveRoom(roomName, socket));
+            socket.on("pm", (data: string) => this.recvPm(data, socket));
         })
+    }
+
+    async recvPm(data: string, socket: Socket) {
+        console.log("pm from client", socket.data['username']);
+        var dataParsed = JSON.parse(data);
+        var result = await this.dbDriver.getUserByUsername(dataParsed['receiver_name']);
+        if (result == "[]") {
+
+            this.io.to(socket.data['username']).emit("pm", JSON.stringify(
+                { "result": "user_unregistered", "sender_name": socket.data['username'] }));
+        } else {
+            this.io.to(dataParsed['receiver_name']).emit("pm", JSON.stringify(
+                { "sender_name": socket.data['username'], "message": dataParsed["message"] }));
+        }
+    }
+
+    async recvMsg(data: string, socket: Socket) { // ADD TIMESTAMP
+        console.log("msg from client", socket.data['username']);
+        var result = await this.dbDriver.addMsg(data, socket.data['username']);
+        console.log(result);
+        var dataParsed = JSON.parse(data);
+        if (result == "error") {
+            this.io.to(socket.id).emit("msg", JSON.stringify({"result":result}));
+        } else {
+            this.io.to(dataParsed['room_name']).emit("msg", JSON.stringify(
+                { "username": socket.data['username'], "type":"message", "message": dataParsed["message"] }));
+        }
     }
 
     recvAscii(socket: Socket) {
@@ -33,7 +62,7 @@ export class ClientMessageHandler {
 
     async recvAnonymousLogin(data: string, socket: Socket) {
         console.log("anonymous login from client", socket.id);
-        let result = await this.dbDriver.getUserByUsername(JSON.parse(data)['username']);
+        var result = await this.dbDriver.getUserByUsername(JSON.parse(data)['username']);
         if (result != "[]") {
             this.io.to(socket.id).emit("anonymousLogin", JSON.stringify({ "result": "login_exists" }));
         } else {
@@ -44,7 +73,7 @@ export class ClientMessageHandler {
 
     async recvLogin(data: string, socket: Socket) {
         console.log("login from client", socket.id);
-        let password: string = JSON.parse(data)['password'];
+        var password: string = JSON.parse(data)['password'];
         switch (password) {
             case '': // no password transmitted
                 let result = await this.dbDriver.getUserByUsername(JSON.parse(data)['username']);
@@ -69,7 +98,7 @@ export class ClientMessageHandler {
 
     async recvListRoom(socket: Socket) {
         console.log("listRoom from client", socket.data['username']);
-        let result = await this.dbDriver.getRooms();
+        var result = await this.dbDriver.getRooms();
         if (result == 'error') {
             this.io.to(socket.id).emit("listRoom", JSON.stringify({ "result": result })); // emit error to client
         } else if (result == '[]') {
@@ -81,7 +110,7 @@ export class ClientMessageHandler {
 
     async recvAddRoom(roomName: string, socket: Socket) {
         console.log("addRoom from client", socket.data['username']);
-        let result = await this.dbDriver.addRoom(roomName);
+        var result = await this.dbDriver.addRoom(roomName);
         if (result == 'duplicate_entry') {
             this.io.to(socket.id).emit("addRoom", JSON.stringify({ "result": "room_exists", "room_name": roomName })); // emit error to client
         } else {
@@ -91,7 +120,7 @@ export class ClientMessageHandler {
 
     async recvJoinRoom(roomName: string, socket: Socket) {
         console.log("joinRoom from client", socket.data['username']);
-        let result = await this.dbDriver.getRoomByName(roomName);
+        var result = await this.dbDriver.getRoomByName(roomName);
         if (result != "[]") {
             try {
                 socket.join(roomName);
