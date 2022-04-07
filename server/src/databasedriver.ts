@@ -55,7 +55,17 @@ export class DatabaseDriver {
     }
 
     public async getRooms(): Promise<string> {
-        return this.query("SELECT * FROM `room`")
+        return this.query("SELECT * FROM `room` ORDER BY name")
+            .then((result: any) => {
+                return JSON.stringify(result)
+            })
+            .catch((error: string) => {
+                return 'error'
+            })
+    }
+
+    public async getRoomByName(roomName: string): Promise<string> {
+        return this.query("SELECT * FROM `room` WHERE name='" + roomName + "'")
             .then((result: any) => {
                 return JSON.stringify(result)
             })
