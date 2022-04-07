@@ -27,6 +27,8 @@ export default class Core{
                                         this.connection.getSocket(), 
                                         this.clientMessageHandler,
                                         this);
+
+
     };
 
     public setServerBanner(banner: string) {
@@ -69,7 +71,6 @@ export default class Core{
 
             case Phase.chat:
                 //DisplayDriver.clearTerminal();
-                DisplayDriver.enableInput();
                 this.startChatPhase();
                 break;
 

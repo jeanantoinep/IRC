@@ -31,7 +31,7 @@ export default class Config {
                 case 'h': 
                     Config.setHostname(args[index+1]); 
                 break;
-                default: console.log('Invalid argument ' + argument);
+                default: break;
               }
         })
     }

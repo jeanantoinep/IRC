@@ -94,6 +94,11 @@ export class ServerMessageHandler {
 
         }
 
+        if(returnData['result'] == 'wrong_pwd'){
+            DisplayDriver.print('Invalid password !\n');
+            this.core.startLoginPhase();
+        }
+
         if(returnData['result'] == 'ok') {
             this.core.consolePhase(Phase.roomList);
         }
@@ -140,6 +145,8 @@ export class ServerMessageHandler {
 
     recvLeaveRoom(data: string) {
         this.core.consolePhase(Phase.roomList);
+
+        DisplayDriver.pauseInput();
     }
 
     recvListRoom(data: string) {
@@ -159,11 +166,12 @@ export class ServerMessageHandler {
 
         });
         DisplayDriver.print('\n')
-        DisplayDriver.enableInput();
+        if(!DisplayDriver.shouldPrompt)
+            DisplayDriver.enableInput();
     }
 
     recvListUsers(data: string) {
-
+        DisplayDriver.print(data);
     }
 
     recvMessage(messageData: string) {
