@@ -23,6 +23,7 @@ export class ClientMessageHandler {
             socket.on("addRoom", (roomName: string) => this.recvAddRoom(roomName, socket));
             socket.on("joinRoom", (roomName: string) => this.recvJoinRoom(roomName, socket));
             socket.on("listUser", (roomName: string) => this.recvListUser(roomName, socket));
+            socket.on("leaveRoom", (roomName: string) => this.recvLeaveRoom(roomName, socket));
         })
     }
 
@@ -89,7 +90,7 @@ export class ClientMessageHandler {
     }
 
     async recvJoinRoom(roomName: string, socket: Socket) {
-        console.log("join room from client", socket.data['username']);
+        console.log("joinRoom from client", socket.data['username']);
         let result = await this.dbDriver.getRoomByName(roomName);
         if (result != "[]") {
             try {
@@ -111,6 +112,17 @@ export class ClientMessageHandler {
         roomUsers.forEach(element => {
             usernames.push(element.data['username']);
         });
-        this.io.to(socket.id).emit("listUser", JSON.stringify({"usernames":usernames}));
+        this.io.to(socket.id).emit("listUser", JSON.stringify({ "usernames": usernames }));
+    }
+
+    recvLeaveRoom(roomName: string, socket: Socket) {
+        console.log("leaveRoom from client", socket.data['username']);
+        try {
+            socket.leave(roomName);
+            this.io.to(socket.id).emit("leaveRoom", JSON.stringify({ "result": "ok", "room_name": roomName }));
+        } catch (e) {
+            console.log(e);
+            this.io.to(socket.id).emit("leaveRoom", JSON.stringify({ "result": "error", "room_name": roomName }));
+        }
     }
 }
