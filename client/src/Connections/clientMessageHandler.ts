@@ -19,9 +19,14 @@ export class ClientMessageHandler {
 
         DisplayDriver.getDriver().on('line', (input:string) => {
             this.parseMessage(input);
+            // process.stdout.moveCursor(0, -1);
+            // process.stdout.clearLine(0);
+            // process.stdout.moveCursor(0, 1);
 
-            //DisplayDriver.print('Input is:' + input + '\n')
-            input = "";
+            // process.stdin.
+
+            // //DisplayDriver.print('Input is:' + input + '\n')
+            // input = "";
         });
     };
 
@@ -245,7 +250,9 @@ export class ClientMessageHandler {
     };
 
     public sendMessage(message: string) {
-        this.socket.emit('msg', message);
+    let data = {'room_name': this.roomName,
+                'message': message};
+        this.socket.emit('msg', JSON.stringify(data));
         return;
     };
 
