@@ -1,12 +1,6 @@
 import { createPool, Pool } from 'mysql2'
 
 
-// interface Room {
-//     id: number;
-//     name: string;
-// }
-
-
 export class DatabaseDriver {
     private pool: Pool;
 

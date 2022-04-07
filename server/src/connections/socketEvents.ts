@@ -22,7 +22,7 @@ export interface ClientToServerEvents {
     joinRoom: (roomName: string) => void;
     history: (data: string) => void; // 50 msg par défaut ? sinon nombre précisé
     msg: (data: string) => void;
-    leaveRoom: () => void;
+    leaveRoom: (roomName: string) => void;
     addRoom: (roomName: string) => void;
     listUser: (roomName: string) => void;
     pm: (data: string) => void; // nom user + message
