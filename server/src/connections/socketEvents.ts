@@ -24,7 +24,7 @@ export interface ClientToServerEvents {
     msg: (data: string) => void;
     leaveRoom: () => void;
     addRoom: (roomName: string) => void;
-    listUser: () => void;
+    listUser: (roomName: string) => void;
     pm: (data: string) => void; // nom user + message
     addFriend: (username: string) => void;
 }
