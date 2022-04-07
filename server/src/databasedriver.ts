@@ -8,6 +8,9 @@ interface RoomsList {
 
 
 export class DatabaseDriver {
+    acceptFriend(friendName: string) {
+      throw new Error("Method not implemented.");
+    }
     private pool: Pool;
 
 
