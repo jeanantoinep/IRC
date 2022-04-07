@@ -28,7 +28,6 @@ export class ClientMessageHandler {
     async recvJoinRoom(roomName: string, socket: Socket) {
         console.log("join room from client");
         let result = await this.dbDriver.getRoomByName(roomName);
-        console.log(JSON.parse(result));
         if (result != "[]") {
             try {
                 socket.join(roomName);
