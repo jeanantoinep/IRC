@@ -53,7 +53,7 @@ export class ClientMessageHandler {
     roomListCommandHandler(command: string) {
         let commandArgs = command.split(' ', 2);
 
-        switch(commandArgs[0]) {
+        switch(commandArgs[0].toLowerCase()) {
             case '/rooms':
                 this.sendRoomsListRequest();
                 break;
@@ -69,7 +69,7 @@ export class ClientMessageHandler {
                 this.sendCreateRoomRequest();
                 break;
 
-            case '/addRoom':
+            case '/addroom':
                 this.sendAddRoomRequest(commandArgs[1]);
             break;
 

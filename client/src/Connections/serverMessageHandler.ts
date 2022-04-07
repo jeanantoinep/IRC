@@ -136,12 +136,18 @@ export class ServerMessageHandler {
         DisplayDriver.print('Rooms list:\n')
         let roomsArray = JSON.parse(data);
 
+        let column = 0;
+
         roomsArray.forEach((room:any) => {
-            DisplayDriver.print(room['name'] + '\n');
+            DisplayDriver.print('  ' + room['name'] + '  ');
+            column++;
+
+            if(column == 2)
+                DisplayDriver.print('\n');
         });
         DisplayDriver.print('\n')
 
-        DisplayDriver.startChat();
+        DisplayDriver.enableInput();
     }
 
     recvListUsers(data: string) {

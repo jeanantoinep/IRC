@@ -14,17 +14,19 @@ export default class DisplayDriver {
         return rl;
     }
 
-    static startChat() {
-        //console.clear();
-        rl.prompt(true);
-    }
-
     static pauseInput() {
         rl.pause();
     }
 
     static resumeInput() {
         rl.resume();
+    }
+    static enableInput() {
+        rl.prompt(true);
+    }
+
+    static printList(list: string[]) {
+
     }
 
 
