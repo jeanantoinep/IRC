@@ -216,7 +216,8 @@ export class ClientMessageHandler {
                 break;
 
             case '/accept':
-              if(this.checkArgc())
+              //if(this.checkArgc())
+              break;
 
             case '/pm':
                 commandArgs = command.split(' ');

@@ -18,6 +18,7 @@ export interface ServerToClientEvents {
     //Users
     addFriend: (data: string) => void; // demande d'ami : pour accepter /accept ?
     listUser: (data: string) => void;
+    acceptFriend: (data: string) => void;
 
     //Misc
     ascii: (data: string) => void;

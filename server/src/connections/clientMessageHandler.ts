@@ -138,3 +138,4 @@ export class ClientMessageHandler {
         //     io.emit("acceptFriend", JSON.stringify({"answer":"Friend accepted"}))
         // });
     }
+}
