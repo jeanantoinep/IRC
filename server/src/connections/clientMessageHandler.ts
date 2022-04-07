@@ -125,4 +125,16 @@ export class ClientMessageHandler {
             this.io.to(socket.id).emit("leaveRoom", JSON.stringify({ "result": "error", "room_name": roomName }));
         }
     }
-}
+
+    recvAcceptFriend(friendName: string){
+        console.log("acceptFriend from client");
+        let result = this.dbDriver.acceptFriend(friendName);
+        // console.log(result)
+        // pool.query("INSERT INTO `friend` (name) VALUES (?)", [friendName], function (err, result) {
+        //     if (err) {
+        //         io.emit("acceptFriend", JSON.stringify({"answer":"Error while trying to accept a friend"}))
+        //         throw err;
+        //     }
+        //     io.emit("acceptFriend", JSON.stringify({"answer":"Friend accepted"}))
+        // });
+    }

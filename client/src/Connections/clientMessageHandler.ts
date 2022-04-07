@@ -215,6 +215,9 @@ export class ClientMessageHandler {
                 this.sendAddFriendRequest();
                 break;
 
+            case '/accept':
+              if(this.checkArgc())
+
             case '/pm':
                 commandArgs = command.split(' ');
                 if(this.checkArgc(commandArgs, 3))
