@@ -1,85 +1,93 @@
 import { stdout, stdin } from 'process';
 import readline from 'readline'
 
-let rl : readline.Interface = readline.createInterface({
-    input: stdin,
-    output: stdout,
-    prompt: '> ',
-    terminal: false,
-});
+
+
 
 export default class DisplayDriver {
+    static rl: readline.Interface = this.createReadlineInterface();
 
     static shouldPrompt: boolean = false;
 
     static getDriver() {
+        return this.rl;
+    }
+
+    
+    static createReadlineInterface() : readline.Interface {
+        let rl = readline.createInterface({
+            input: stdin,
+            //output: stdout,
+            prompt: '> ',
+            terminal: true,
+        });
+
+        readline.emitKeypressEvents(stdin);
+
         return rl;
     }
 
+    static destroyReadlineInterface(rl: readline.Interface) {
+
+    }
+
     static pauseInput() {
-        rl.pause();
+        this.rl.pause();
         this.shouldPrompt = false;
     }
 
     static resumeInput() {
-        rl.resume();
+        this.rl.resume();
+        //stdout.write('> ');
     }
+
     static enableInput() {
-        rl.prompt(true);
-        this.shouldPrompt = true;
+    }
+
+    static enableMessageInput(){
+        stdout.write('> ');
     }
 
     static printList(list: string[]) {
 
     }
 
+    static leaveChat() {
+        this.enableInput();
+    }
+
     static startChat() {
-        if(this.shouldPrompt)
-            this.pauseInput();
-        let rowsCount = process.stdout.rows
+        let rowsCount = stdout.rows
         while(rowsCount) {
             DisplayDriver.print('\n');
             rowsCount--;
         }
-        //readline.cursorTo(process.stdout, 0, 0);
-        this.enableInput();
+        this.enableMessageInput()
     }
 
-    ///CHAT: Essayer avec stdin.write avec un \n à la fin, pour écrire en bas du terminal
+    static scrollDown(currentRow: number) {
+        let rowsCount = stdout.rows - currentRow;
+        while(rowsCount) {
+            DisplayDriver.print('\n');
+            rowsCount--;
+        }
+    }
+
     static chat(msg: string) {
         stdout.clearLine(0);
         stdout.cursorTo(0);
-        //console.log(msg);
-
-        process.stdin.write(msg + '\n');
-        rl.prompt(true);
-    }
-
-    static printOnLine(msg: string, line: number = 1) {
-        //process.stdout.pause();
-        stdout.clearLine(0);
-        stdout.cursorTo(0);
-        stdout.write(msg);
-        //process.stdout.resume();
+        stdout.write(msg + '\n');
+        //this.rl.prompt(true);
     }
 
     static print(msg: string) : void {
-        if(this.shouldPrompt) {
-            stdout.clearLine(0);
-            stdout.cursorTo(0);
-            //this.pauseInput();
-        }
-
         stdout.write(msg);
-
-        if(this.shouldPrompt) {
-            rl.prompt(true);
-        }
     }
 
     static async createPrompt(message: string) {
+        DisplayDriver.print(message);
         let answer =  await new Promise<string>((resolve, reject) => {
-            rl.question(message, (input) => {
+            this.rl.question(message, (input) => {
                 resolve(input);    
             });
         });
@@ -87,11 +95,6 @@ export default class DisplayDriver {
     }
 
     static clearTerminal() {
-        // let rowsCount = process.stdout.rows
-        // while(rowsCount) {
-        //     DisplayDriver.print('\n');
-        //     rowsCount--;
-        // }
         readline.cursorTo(stdout, 0, 0);
         readline.clearScreenDown(stdout);
     }

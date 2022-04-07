@@ -19,9 +19,10 @@ export class ServerMessageHandler {
 
         this.init();
     }
-    
+
     init() {
         this.socket.on('addFriend', (data:string) => this.recvAddFriend(data));
+        this.socket.on('acceptFriend', (data: string) => this.recvAcceptFriend(data));
         this.socket.on('addRoom', (data:string) => this.recvAddRoom(data));
         this.socket.on('connect', ()=> this.recvConnect());
         this.socket.on('connect_error', async (err: Error) => await this.recvConnectError(err));
@@ -34,9 +35,11 @@ export class ServerMessageHandler {
         this.socket.on('login', (data: string) => this.recvLogin(data))
         this.socket.on('msg', (data:string) => this.recvMessage(data));
         this.socket.on('ascii', (data: string) => this.recvAsciiBanner(data));
+
     }
 
     recvAsciiBanner(data: string) {
+        DisplayDriver.clearTerminal();
         DisplayDriver.print(data);
         DisplayDriver.print('\n');
 
@@ -118,7 +121,11 @@ export class ServerMessageHandler {
     }
 
     recvAddFriend(data: string) {
-        
+
+    }
+
+    recvAcceptFriend(data:string){
+
     }
 
     recvAddRoom(data: string) {
@@ -144,8 +151,8 @@ export class ServerMessageHandler {
     }
 
     recvLeaveRoom(data: string) {
+        DisplayDriver.leaveChat();
         this.core.consolePhase(Phase.roomList);
-
         DisplayDriver.pauseInput();
     }
 
@@ -153,21 +160,16 @@ export class ServerMessageHandler {
         DisplayDriver.print('Rooms list:\n')
         let roomsArray = JSON.parse(data);
 
-        let column = 0;
-
+        let rows = 0;
         roomsArray.forEach((room:any) => {
-            DisplayDriver.print('  ' + room['name'] + '  ');
-            column++;
-
-            if(column == 2) {
-                DisplayDriver.print('\n');
-                column = 0;
-            }
-
+            DisplayDriver.print(room['name'] + '\n');
+            rows++;
         });
-        DisplayDriver.print('\n')
+
+        DisplayDriver.scrollDown(rows + this.core.getServerBannerSize());
+        //DisplayDriver.print('\n')
         if(!DisplayDriver.shouldPrompt)
-            DisplayDriver.enableInput();
+            DisplayDriver.resumeInput();
     }
 
     recvListUsers(data: string) {

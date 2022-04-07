@@ -17,6 +17,7 @@ export default class Core{
     private serverMessageHandler: ServerMessageHandler;
 
     private serverBanner: string = '';
+    private serverBannerSize: number = 0;
 
     constructor() {
         Config.initConfig();
@@ -33,21 +34,29 @@ export default class Core{
 
     public setServerBanner(banner: string) {
         this.serverBanner = banner;
+        this.serverBannerSize = (banner.match(/\n/g) || '').length + 1;
+    }
+
+    public getServerBannerSize() {
+        return this.serverBannerSize;
     }
 
     public async startLoginPhase() {
+        //DisplayDriver.enableInput();
+        DisplayDriver.print('\n')
         let login = await DisplayDriver.createPrompt('Username: ');
         this.clientMessageHandler.sendLoginRequest(login);
         this.clientMessageHandler.setPhase(Phase.login);
     }
 
     public async startRoomsListPhase() {
+        DisplayDriver.clearTerminal();
+        DisplayDriver.print(this.serverBanner);
         this.clientMessageHandler.sendRoomsListRequest();
         this.clientMessageHandler.setPhase(Phase.roomList);
     }
 
     public startChatPhase() {
-        console.log('CHAT PHASE')
         DisplayDriver.clearTerminal();
         this.clientMessageHandler.setPhase(Phase.chat);
         DisplayDriver.startChat();
@@ -59,18 +68,14 @@ export default class Core{
                 break;
 
             case Phase.login:
-                DisplayDriver.print('\n')
                 this.startLoginPhase()
                 break;
 
             case Phase.roomList:
-                DisplayDriver.clearTerminal();
-                DisplayDriver.print(this.serverBanner);
                 this.startRoomsListPhase()
                 break;
 
             case Phase.chat:
-                //DisplayDriver.clearTerminal();
                 this.startChatPhase();
                 break;
 
