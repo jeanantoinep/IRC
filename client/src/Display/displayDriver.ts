@@ -9,6 +9,7 @@ let rl : readline.Interface = readline.createInterface({
 
 export default class DisplayDriver {
 
+    static shouldPrompt: boolean = false;
 
     static getDriver() {
         return rl;
@@ -49,7 +50,13 @@ export default class DisplayDriver {
     }
 
     static print(msg: string) : void {
+        if(this.shouldPrompt)
+            this.pauseInput();
+
         process.stdout.write(msg);
+
+        if(this.shouldPrompt)
+            rl.prompt(true);
     }
 
     static async createPrompt(message: string) {

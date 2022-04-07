@@ -47,6 +47,10 @@ export default class Core{
         this.clientMessageHandler.setPhase(Phase.roomList);
     }
 
+    public startChatPhase() {
+        this.clientMessageHandler.setPhase(Phase.chat);
+    }
+
     consolePhase(arg: Phase) {
         switch (arg) {
             case Phase.load:
@@ -64,6 +68,7 @@ export default class Core{
                 break;
 
             case Phase.chat:
+                //DisplayDriver.clearTerminal();
                 DisplayDriver.enableInput();
                 break;
 
