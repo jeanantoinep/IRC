@@ -38,7 +38,7 @@ export default class Core{
 
     public async startLoginPhase() {
         let login = await DisplayDriver.createPrompt('Login: ');
-        this.clientMessageHandler.sendLogin(login);
+        this.clientMessageHandler.sendLoginRequest(login);
     }
 
     public async startRoomsListPhase() {

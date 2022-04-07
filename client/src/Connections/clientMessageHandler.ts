@@ -2,14 +2,19 @@ import DisplayDriver from "../Display/displayDriver";
 import {ServerToClientEvents, ClientToServerEvents} from './socketEvents';
 import {io, Socket} from 'socket.io-client';
 
+import { Phase } from "../Core/core";
+
 export class ClientMessageHandler {
     private socket: Socket<ServerToClientEvents, ClientToServerEvents>;
+
+    private phaseCommandHandler: (command:string) => void;
 
     //Client data
     private username: string = '';
 
     constructor(socket: Socket<ServerToClientEvents, ClientToServerEvents>) {
         this.socket = socket;
+        this.phaseCommandHandler = this.parseCommand;
 
         DisplayDriver.getDriver().on('line', (input:string) => {
             this.parseMessage(input);
@@ -22,7 +27,7 @@ export class ClientMessageHandler {
 
     parseMessage(message: string) {
         if(message.startsWith('/'))
-            return this.parseCommand(message);
+            return this.phaseCommandHandler(message);
         else
             return this.sendMessage(message);
     };
@@ -89,12 +94,20 @@ export class ClientMessageHandler {
         };
     };
 
-    public sendLogin(username: string, password: string = '') {
+    public sendLoginRequest(username: string, password: string = '') {
         let loginPacket = {"username": username, "password": password};
         console.log('Login packet sent: ' + JSON.stringify(loginPacket));
 
         this.username = username;
         this.socket.emit('login', JSON.stringify(loginPacket));
+    }
+
+    public sendAnonymousLoginRequest(username: string) {
+        let loginPacket = {"username": username};
+        console.log('Anonymous login sent: '+JSON.stringify(loginPacket));
+        this.username = username;
+
+        this.socket.emit('anonymousLogin', JSON.stringify(loginPacket));
     }
 
     public sendAsciiRequest() {

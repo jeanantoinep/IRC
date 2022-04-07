@@ -70,7 +70,7 @@ export class ServerMessageHandler {
                 passwd = await DisplayDriver.createPrompt(`Password :`);
                 len = passwd.length;
             }
-            this.clientHandler.sendLogin(this.clientHandler.getUsername(), passwd);
+            this.clientHandler.sendLoginRequest(this.clientHandler.getUsername(), passwd);
             return;
         }
 
@@ -86,8 +86,12 @@ export class ServerMessageHandler {
                     len = pwd.length;
                 }
                 //let pwd = await DisplayDriver.createPrompt(`Password :`);
-                this.clientHandler.sendLogin(this.clientHandler.getUsername(), pwd);
+                this.clientHandler.sendLoginRequest(this.clientHandler.getUsername(), pwd);
+                return;
             }
+
+            this.clientHandler.sendAnonymousLoginRequest(this.clientHandler.getUsername());
+
         }
 
         if(returnData['result'] == 'ok') {

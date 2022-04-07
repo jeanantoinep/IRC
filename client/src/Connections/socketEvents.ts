@@ -25,6 +25,7 @@ export interface ServerToClientEvents {
 export interface ClientToServerEvents {
     //Authentification
     login: (userData: string) => void; // username pour invité ou username + password pour personne enregistrée
+    anonymousLogin: (userData: string) => void;
     register: (userData: string) => void;
 
     //Rooms

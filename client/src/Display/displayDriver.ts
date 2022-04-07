@@ -7,7 +7,6 @@ let rl : readline.Interface = readline.createInterface({
     terminal: false,
 });
 
-
 export default class DisplayDriver {
 
 
