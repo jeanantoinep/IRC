@@ -76,7 +76,11 @@ export default class DisplayDriver {
     static chat(msg: string) {
         stdout.clearLine(0);
         stdout.cursorTo(0);
+        stdout.moveCursor(0, -1);
+
         stdout.write(msg + '\n');
+        stdout.write('\n');
+        //stdout.moveCursor(0, 1);
         //this.rl.prompt(true);
     }
 

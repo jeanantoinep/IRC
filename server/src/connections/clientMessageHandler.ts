@@ -14,6 +14,15 @@ export class ClientMessageHandler {
         this.init();
     }
 
+    private getTimestamp() : string {
+        let now = new Date();
+        now.setTime(Date.now());
+        return `${String(now.getHours()).padStart(2, '0')}:` +
+               `${String(now.getMinutes()).padStart(2, '0')}:` +
+               `${String(now.getSeconds()).padStart(2, '0')}`;
+
+    }
+
     init() {
         this.io.on("connection", (socket) => {
             socket.on("ascii", () => this.recvAscii(socket));
@@ -52,7 +61,13 @@ export class ClientMessageHandler {
             this.io.to(socket.id).emit("msg", JSON.stringify({"result":result}));
         } else {
             this.io.to(dataParsed['room_name']).emit("msg", JSON.stringify(
-                { "username": socket.data['username'], "type":"message", "message": dataParsed["message"] }));
+                { 
+                    "username": socket.data['username'], 
+                    "type":"message", 
+                    "message": dataParsed["message"],
+                    "timestamp": this.getTimestamp()
+                }
+            ));
         }
     }
 

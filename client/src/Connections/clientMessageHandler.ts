@@ -96,7 +96,8 @@ export class ClientMessageHandler {
             }
 
             //stdout.cursorTo(0)
-            stdout.write(char);
+            if(char != undefined)
+                stdout.write(char);
 
         });
     }
@@ -136,7 +137,9 @@ export class ClientMessageHandler {
     }
 
     parseMessage(message: string) {
-        //console.log('PARSE MESSAGE ' + message)
+        if(this.currentPhase == Phase.login || this.currentPhase == Phase.load)
+            return;
+
         if(message.startsWith('/'))
             return this.phaseCommandHandler(message);
         else {
