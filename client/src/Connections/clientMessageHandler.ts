@@ -11,6 +11,7 @@ export class ClientMessageHandler {
 
     //Client data
     private username: string = '';
+    private roomName: string = '';
 
     constructor(socket: Socket<ServerToClientEvents, ClientToServerEvents>) {
         this.socket = socket;
@@ -18,11 +19,26 @@ export class ClientMessageHandler {
 
         DisplayDriver.getDriver().on('line', (input:string) => {
             this.parseMessage(input);
+
+            //DisplayDriver.print('Input is:' + input + '\n')
+            input = "";
         });
     };
 
+    public setUsername(name: string) {
+        this.username = name;
+    }
+
     public getUsername() {
         return this.username;
+    }
+
+    public setRoomName(name: string) {
+        this.roomName = name;
+    }
+
+    public getRoomName() {
+        return this.roomName;
     }
 
     public setPhase(phase: Phase) {
@@ -42,8 +58,10 @@ export class ClientMessageHandler {
     parseMessage(message: string) {
         if(message.startsWith('/'))
             return this.phaseCommandHandler(message);
-        else
-            return this.sendMessage(message);
+        else {
+            this.sendMessage(message);
+            DisplayDriver.enableInput();
+        }
     };
 
     checkArgc(args: string[], count: number) {
@@ -74,7 +92,7 @@ export class ClientMessageHandler {
             break;
 
             default:
-                DisplayDriver.print(`You can't use ${commandArgs[0]} in the room selection !S \n`);
+                DisplayDriver.print(`You can't use ${commandArgs[0]} in the room selection\n`);
                 break;
         }
 
@@ -117,7 +135,7 @@ export class ClientMessageHandler {
                 break;
 
             default:
-                DisplayDriver.print(`Invalid command ${commandArgs[0]} \n`);
+                DisplayDriver.print(`You can't use ${commandArgs[0]} in a chat room\n`);
                 break;
 
         };
@@ -129,7 +147,7 @@ export class ClientMessageHandler {
 
     public sendLoginRequest(username: string, password: string = '') {
         let loginPacket = {"username": username, "password": password};
-        console.log('Login packet sent: ' + JSON.stringify(loginPacket));
+        DisplayDriver.print('Login packet sent: ' + JSON.stringify(loginPacket) + '\n');
 
         this.username = username;
         this.socket.emit('login', JSON.stringify(loginPacket));
@@ -137,7 +155,7 @@ export class ClientMessageHandler {
 
     public sendAnonymousLoginRequest(username: string) {
         let loginPacket = {"username": username};
-        console.log('Anonymous login sent: '+JSON.stringify(loginPacket));
+        DisplayDriver.print('Anonymous login sent: '+JSON.stringify(loginPacket)) + '\n';
         this.username = username;
 
         this.socket.emit('anonymousLogin', JSON.stringify(loginPacket));
@@ -153,7 +171,7 @@ export class ClientMessageHandler {
     };
 
     public sendAddRoomRequest(roomName: string) {
-        console.log('ADD ROOM')
+        DisplayDriver.print('ADD ROOM\n')
         this.socket.emit('addRoom', roomName);
     }
 
@@ -200,7 +218,7 @@ export class ClientMessageHandler {
     };
 
     public sendUsersListRequest() {
-        this.socket.emit('listUser');
+        this.socket.emit('listUser', this.roomName);
         return;
     };
 

@@ -1,3 +1,4 @@
+import { stdout } from 'process';
 import readline from 'readline'
 
 let rl : readline.Interface = readline.createInterface({
@@ -17,6 +18,7 @@ export default class DisplayDriver {
 
     static pauseInput() {
         rl.pause();
+        this.shouldPrompt = false;
     }
 
     static resumeInput() {
@@ -24,20 +26,30 @@ export default class DisplayDriver {
     }
     static enableInput() {
         rl.prompt(true);
+        this.shouldPrompt = true;
     }
 
     static printList(list: string[]) {
 
     }
 
+    static startChat() {
+        let rowsCount = process.stdout.rows
+        while(rowsCount) {
+            DisplayDriver.print('\n');
+            rowsCount--;
+        }
+            //readline.cursorTo(process.stdout, 0, rowsCount);
+        this.enableInput();
+    }
 
     ///CHAT: Essayer avec stdin.write avec un \n à la fin, pour écrire en bas du terminal
     static chat(msg: string) {
-        //process.stdout.clearLine(0);
-        //process.stdout.cursorTo(0);
+        process.stdout.clearLine(0);
+        process.stdout.cursorTo(0);
         //console.log(msg);
 
-        process.stdin.write(msg + '\n');
+        //process.stdin.write(msg + '\n');
         rl.prompt(true);
     }
 
@@ -50,13 +62,17 @@ export default class DisplayDriver {
     }
 
     static print(msg: string) : void {
-        if(this.shouldPrompt)
-            this.pauseInput();
+        if(this.shouldPrompt) {
+            process.stdout.clearLine(0);
+            process.stdout.cursorTo(0);
+            //this.pauseInput();
+        }
 
         process.stdout.write(msg);
 
-        if(this.shouldPrompt)
+        if(this.shouldPrompt) {
             rl.prompt(true);
+        }
     }
 
     static async createPrompt(message: string) {
@@ -69,7 +85,8 @@ export default class DisplayDriver {
     }
 
     static clearTerminal() {
-        console.clear();
+        readline.cursorTo(process.stdout, 0, 0);
+        readline.clearScreenDown(process.stdout);
     }
 
 }

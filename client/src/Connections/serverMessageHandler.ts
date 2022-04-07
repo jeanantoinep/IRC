@@ -130,6 +130,7 @@ export class ServerMessageHandler {
 
         if(returnData['result'] == 'ok') {
             this.core.consolePhase(Phase.chat);
+            this.clientHandler.setRoomName(returnData['room_name']);
             return;
         }
 

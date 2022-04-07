@@ -3,9 +3,6 @@ import Config from "../config";
 import DisplayDriver from "../Display/displayDriver";
 import { ClientMessageHandler } from "../Connections/clientMessageHandler";
 import { ServerMessageHandler } from "../Connections/serverMessageHandler";
-import { Socket } from "socket.io-client";
-import { Server } from "http";
-import { rawListeners } from "process";
 
 export enum Phase {
     load = 1,
@@ -48,7 +45,10 @@ export default class Core{
     }
 
     public startChatPhase() {
+        console.log('CHAT PHASE')
+        DisplayDriver.clearTerminal();
         this.clientMessageHandler.setPhase(Phase.chat);
+        DisplayDriver.startChat();
     }
 
     consolePhase(arg: Phase) {
@@ -70,6 +70,7 @@ export default class Core{
             case Phase.chat:
                 //DisplayDriver.clearTerminal();
                 DisplayDriver.enableInput();
+                this.startChatPhase();
                 break;
 
           default:
