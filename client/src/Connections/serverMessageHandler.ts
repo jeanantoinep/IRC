@@ -37,6 +37,7 @@ export class ServerMessageHandler {
     }
 
     recvAsciiBanner(data: string) {
+        DisplayDriver.clearTerminal();
         DisplayDriver.print(data);
         DisplayDriver.print('\n');
 
@@ -144,8 +145,8 @@ export class ServerMessageHandler {
     }
 
     recvLeaveRoom(data: string) {
+        DisplayDriver.leaveChat();
         this.core.consolePhase(Phase.roomList);
-
         DisplayDriver.pauseInput();
     }
 
@@ -153,21 +154,16 @@ export class ServerMessageHandler {
         DisplayDriver.print('Rooms list:\n')
         let roomsArray = JSON.parse(data);
 
-        let column = 0;
-
+        let rows = 0;
         roomsArray.forEach((room:any) => {
-            DisplayDriver.print('  ' + room['name'] + '  ');
-            column++;
-
-            if(column == 2) {
-                DisplayDriver.print('\n');
-                column = 0;
-            }
-
+            DisplayDriver.print(room['name'] + '\n');
+            rows++;
         });
-        DisplayDriver.print('\n')
+
+        DisplayDriver.scrollDown(rows + this.core.getServerBannerSize());
+        //DisplayDriver.print('\n')
         if(!DisplayDriver.shouldPrompt)
-            DisplayDriver.enableInput();
+            DisplayDriver.resumeInput();
     }
 
     recvListUsers(data: string) {

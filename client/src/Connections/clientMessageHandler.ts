@@ -1,6 +1,8 @@
+import { stdout, stdin } from 'process';
+
 import DisplayDriver from "../Display/displayDriver";
 import {ServerToClientEvents, ClientToServerEvents} from './socketEvents';
-import {io, Socket} from 'socket.io-client';
+import {Socket} from 'socket.io-client';
 
 import { Phase } from "../Core/core";
 
@@ -9,26 +11,95 @@ export class ClientMessageHandler {
 
     private phaseCommandHandler: (command:string) => void;
 
+    //Phase data
+    private currentPhase:Phase = Phase.load;
     //Client data
     private username: string = '';
     private roomName: string = '';
+
+    //Message data
+    private inputData: string = '';
 
     constructor(socket: Socket<ServerToClientEvents, ClientToServerEvents>) {
         this.socket = socket;
         this.phaseCommandHandler = this.parseCommand;
 
-        DisplayDriver.getDriver().on('line', (input:string) => {
-            this.parseMessage(input);
-            // process.stdout.moveCursor(0, -1);
-            // process.stdout.clearLine(0);
-            // process.stdout.moveCursor(0, 1);
+        //DisplayDriver.getDriver().on('keypress', (input:string) => {
+        //    console.log('key: ' + input);
+        //});
 
-            // process.stdin.
-
-            // //DisplayDriver.print('Input is:' + input + '\n')
-            // input = "";
-        });
+        this.initInputHandlers();
     };
+
+    private initInputHandlers() {
+        stdin.on('SIGTERM', (data: Buffer) => {
+            process.exit(1);
+        });
+
+        stdin.on('data', (data: string) => {
+
+            
+            //console.log(data);
+            //See: https://www.fileformat.info/info/charset/UTF-8/list.htm
+
+
+            //if(data == '\u0008') { //Backspace
+            //   process.stdout.write('\033c')
+            //    process.stdout.moveCursor(-1, 0);
+            //}
+
+            //if(this.currentPhase != Phase.chat)
+                //DisplayDriver.getDriver().write(data);
+
+
+
+        });
+
+        // stdin.on('keypress', (...input) => {
+        stdin.on('keypress', (...data:any) => {
+            //console.log(data);
+            let char: string = data[0];
+            let sequence: string = data[1].sequence;
+
+
+            // if(this.currentPhase != Phase.chat &&
+            //     this.currentPhase != Phase.roomList)
+            //      return;
+
+            if(sequence == '\b' || sequence == '\x1B[3~') {
+                this.inputData = DisplayDriver.getDriver().line;
+                stdout.clearLine(0);
+                stdout.cursorTo(0);
+                stdout.write('> ');
+                stdout.write(this.inputData);
+                //stdout.moveCursor(1, 0);
+                return;
+            }
+
+            if(sequence == '\r') { //End of line detection
+                //console.log('EOL Detected, line: ' + this.inputData)
+                this.parseMessage(this.inputData);
+                this.inputData = '';
+                stdout.cursorTo(0);
+                stdout.write('> ');
+                stdout.clearLine(1);
+                return;
+            }
+
+            if(char != undefined)
+                this.inputData += char;
+
+            if(this.currentPhase == Phase.chat) {
+                //stdout.cursorTo(2);
+                //stdout.write(DisplayDriver.getDriver().line);
+                //return;
+            }
+
+            //stdout.cursorTo(0)
+            stdout.write(char);
+
+        });
+    }
 
     public setUsername(name: string) {
         this.username = name;
@@ -50,10 +121,14 @@ export class ClientMessageHandler {
         switch(phase){
             case Phase.roomList:
                 this.phaseCommandHandler = this.roomListCommandHandler;
+                this.currentPhase = Phase.roomList;
                 break;
 
             case Phase.chat:
                 this.phaseCommandHandler = this.chatRoomCommandHandler;
+                this.currentPhase = Phase.chat;
+                //this.initInputHandlers();
+                break;
 
             default:
                 break;
@@ -61,11 +136,12 @@ export class ClientMessageHandler {
     }
 
     parseMessage(message: string) {
+        //console.log('PARSE MESSAGE ' + message)
         if(message.startsWith('/'))
             return this.phaseCommandHandler(message);
         else {
             this.sendMessage(message);
-            DisplayDriver.enableInput();
+            DisplayDriver.resumeInput();
         }
     };
 
@@ -92,15 +168,22 @@ export class ClientMessageHandler {
                 this.sendCreateRoomRequest();
                 break;
 
-            case '/addroom':
-                this.sendAddRoomRequest(commandArgs[1]);
-            break;
+            case '/help':
+                console.log('TEST')
+                this.showRoomListCommands();
+                break;
 
             default:
                 DisplayDriver.print(`You can't use ${commandArgs[0]} in the room selection\n`);
                 break;
         }
 
+    }
+
+    showRoomListCommands() {
+        DisplayDriver.print(`Available options:
+                            /join {room name} => Joins an existing room
+                            /create {room name} => Creates a new room`)
     }
 
     chatRoomCommandHandler(command: string) {
