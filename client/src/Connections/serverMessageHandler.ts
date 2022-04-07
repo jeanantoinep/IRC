@@ -99,6 +99,19 @@ export class ServerMessageHandler {
         }
     }
 
+    async recvAnonymousLogin(data: string) {
+        let returnData = JSON.parse(data);
+        if(returnData['result'] == 'ok') {
+            this.core.consolePhase(Phase.roomList);
+        }
+
+        if(returnData['result'] == 'login_exists') {
+            DisplayDriver.print('Username is already in use ! Please pick another one')
+            let answer = await DisplayDriver.createPrompt(`Username: `);
+
+        }
+    }
+
     recvAddFriend(data: string) {
         
     }
@@ -123,12 +136,18 @@ export class ServerMessageHandler {
         DisplayDriver.print('Rooms list:\n')
         let roomsArray = JSON.parse(data);
 
+        let column = 0;
+
         roomsArray.forEach((room:any) => {
-            DisplayDriver.print(room['name'] + '\n');
+            DisplayDriver.print('  ' + room['name'] + '  ');
+            column++;
+
+            if(column == 2)
+                DisplayDriver.print('\n');
         });
         DisplayDriver.print('\n')
 
-        DisplayDriver.startChat();
+        DisplayDriver.enableInput();
     }
 
     recvListUsers(data: string) {
