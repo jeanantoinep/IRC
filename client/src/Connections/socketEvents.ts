@@ -39,7 +39,7 @@ export interface ClientToServerEvents {
     //Messages
     history: (count: number) => void; // 50 msg par défaut ? sinon nombre précisé
     msg: (data: string) => void;
-    pm: (userName: string, message: string) => void; // nom user + message
+    pm: (data: string) => void; // nom user + message
 
     //Users
     listUser: (roomName: string) => void;

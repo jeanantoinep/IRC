@@ -43,7 +43,7 @@ export default class Core{
 
     public async startLoginPhase() {
         DisplayDriver.print('\n')
-        this.clientMessageHandler.startLoginProcess();
+        await this.clientMessageHandler.startLoginProcess();
         this.clientMessageHandler.setPhase(Phase.login);
     }
 
