@@ -61,6 +61,8 @@ export class ClientMessageHandler {
                     }))
                 console.log("SOCKET NOT FOUND");
             } else {
+                console.log(receiverId);
+                console.log(socket.data['username']);
                 this.io.to(receiverId).emit("msg", JSON.stringify(
                     {
                         "username": socket.data['username'],
@@ -68,7 +70,6 @@ export class ClientMessageHandler {
                         "message": dataParsed["message"],
                         "timestamp": this.getTimestamp()
                     }))
-                // { "sender_name": socket.data['username'], "message": dataParsed["message"] }));
             }
         }
     }
@@ -87,7 +88,9 @@ export class ClientMessageHandler {
         } else {
             this.io.to(socket.id).emit("anonymousLogin", JSON.stringify({ "result": "ok" }));
             socket.data['username'] = parsedData['username'];
+            console.log(socket.data['username']);
             this.allSockets[socket.data['username'].toLowerCase()] = socket.id;
+            console.log(this.allSockets[socket.data['username'].toLowerCase()]);
         }
     }
 
@@ -189,17 +192,18 @@ export class ClientMessageHandler {
         this.io.to(socket.id).emit("listUser", JSON.stringify({ "usernames": usernames }));
     }
 
-    async recvMsg(data: string, socket: Socket) { // ADD TIMESTAMP
+    async recvMsg(data: string, socket: Socket) {
         console.log("msg from client", socket.data['username']);
-        var result = await this.dbDriver.addMsg(data, socket.data['username']);
         var dataParsed = JSON.parse(data);
+        dataParsed['timestamp'] = this.getTimestamp();
+        var result = await this.dbDriver.addMsg(JSON.stringify(dataParsed), socket.data['username']);
+        console.log("result addMsg=", result);
         if (result == "error") {
             this.io.to(socket.id).emit("msg", JSON.stringify({ "result": result }));
         } else {
             var userId = this.allSockets[socket.data['username'].toLowerCase()];
             console.log(userId);
             var userType = (userId == undefined) ? "guest" : "registered";
-            console.log("userType =", userType);
             this.io.to(dataParsed['room_name'].toLowerCase()).emit("msg", JSON.stringify(
                 {
                     "username": socket.data['username'],
