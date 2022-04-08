@@ -39,35 +39,12 @@ export class ClientMessageHandler {
         })
     }
 
-    async recvRegister(userData: string, socket: Socket) {
-        console.log("register from client", socket.id);
-        var dataParsed = JSON.parse(userData);
-        var result = await this.dbDriver.getUserByUsername(dataParsed['username']);
-        if (result == "error") {
-            this.io.to(socket.id).emit("register", JSON.stringify({ "result": result }))
-        } else if (result != "[]") {
-            this.io.to(socket.id).emit("register", JSON.stringify({
-                "result": "username_exists", "username": dataParsed['username']
-            }))
-        } else {
-            var result2 = await this.dbDriver.addUser(userData);
-            if (result2 == "error") {
-                this.io.to(socket.id).emit("register", JSON.stringify({ "result": result }))
-            } else {
-                this.io.to(socket.id).emit("register", JSON.stringify({
-                    "result": "ok", "username": dataParsed['username']
-                }));
-                socket.data['username'] = dataParsed['username'];
-            }
-        }
-    }
-
     async recvPm(data: string, socket: Socket) {
         console.log("pm from client", socket.data['username'], "to", JSON.parse(data)['']);
         var dataParsed = JSON.parse(data);
         var result = await this.dbDriver.getUserByUsername(dataParsed['receiver_name']);
         if (result == "[]") {
-
+            
             this.io.to(socket.data['username']).emit("pm", JSON.stringify(
                 { "result": "user_unregistered", "sender_name": socket.data['username'] }));
         } else {
@@ -116,6 +93,29 @@ export class ClientMessageHandler {
         }
     }
 
+    async recvRegister(userData: string, socket: Socket) {
+        console.log("register from client", socket.id);
+        var dataParsed = JSON.parse(userData);
+        var result = await this.dbDriver.getUserByUsername(dataParsed['username']);
+        if (result == "error") {
+            this.io.to(socket.id).emit("register", JSON.stringify({ "result": result }))
+        } else if (result != "[]") {
+            this.io.to(socket.id).emit("register", JSON.stringify({
+                "result": "username_exists", "username": dataParsed['username']
+            }))
+        } else {
+            var result2 = await this.dbDriver.addUser(userData);
+            if (result2 == "error") {
+                this.io.to(socket.id).emit("register", JSON.stringify({ "result": result }))
+            } else {
+                this.io.to(socket.id).emit("register", JSON.stringify({
+                    "result": "ok", "username": dataParsed['username']
+                }));
+                socket.data['username'] = dataParsed['username'];
+            }
+        }
+    }
+
     async recvListRoom(socket: Socket) {
         console.log("listRoom from client", socket.data['username']);
         var result = await this.dbDriver.getRooms();
@@ -130,7 +130,7 @@ export class ClientMessageHandler {
 
     async recvAddRoom(roomName: string, socket: Socket) {
         console.log("addRoom from client", socket.data['username']);
-        var result = await this.dbDriver.addRoom(roomName);
+        var result = await this.dbDriver.addRoom(roomName.toLowerCase());
         if (result == 'duplicate_entry') {
             this.io.to(socket.id).emit("addRoom", JSON.stringify({ "result": "room_exists", "room_name": roomName })); // emit error to client
         } else {
@@ -143,7 +143,7 @@ export class ClientMessageHandler {
         var result = await this.dbDriver.getRoomByName(roomName);
         if (result != "[]") {
             try {
-                socket.join(roomName);
+                socket.join(roomName.toLowerCase());
                 this.io.to(socket.id).emit("joinRoom", JSON.stringify({ "result": "ok", "room_name": roomName }));
             } catch (e) {
                 console.log(e);
