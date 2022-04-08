@@ -55,7 +55,11 @@ export class ServerMessageHandler {
     }
 
     recvPrivateMessage(data: string) {
-        DisplayDriver.print(data);
+        let returnData = JSON.parse(data);
+        if(returnData['result'] == 'user_unknown') {
+            DisplayDriver.print(`Unknown user: ${returnData['username']} !\n`)
+            return;
+        }
     }
 
     recvRegister(data: string) {
@@ -211,10 +215,16 @@ export class ServerMessageHandler {
         let messageType = messageObject['type'];
 
         if(messageType == 'message') {
+            let timestamp:string = messageObject['timestamp'];
+            let userName:string = messageObject['username'];
+            let message:string = messageObject['message'];
+            DisplayDriver.chat(`${timestamp} ${('<@'+userName+'>').padStart(15, ' ')} ${message}`);
+        }
+        else if(messageType == 'pm') {
             let timestamp = messageObject['timestamp'];
             let userName = messageObject['username'];
             let message = messageObject['message'];
-            DisplayDriver.chat(`${timestamp} <@${userName}> ${message}`);
+            DisplayDriver.chat(`${timestamp} ${('<@'+userName+'>').padStart(15, ' ')} ${message}`);
         }
         else if (messageType == 'join') {
             let timestamp = messageObject['timestamp'];
