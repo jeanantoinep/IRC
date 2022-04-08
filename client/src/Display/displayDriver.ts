@@ -164,30 +164,32 @@ export default class DisplayDriver {
                              self = false): string {
 
         let line = timestamp + ' ';
-        if(self) line += ('<\x1b[31m@' + username + '\x1b[0m>').padStart(15, ' ');
-        else line += ('<\x1b[32m@' + username + '\x1b[0m>').padStart(15, ' ');
+        if(self) line += String('<\x1b[31m@' + username + '\x1b[0m> ').padStart(25, ' ');
+        else line += String('<\x1b[32m@' + username + '\x1b[0m> ').padStart(25, ' ');
         line += message;
         return line;
     }
 
     static formatPrivateMessage(timestamp: string, username: string, message: string): string {
-        let line = timestamp + ' ';
-        line += ('<#' + username + '>').padStart(15, ' ');
+        let line = '\u001b[7m' + timestamp + ' ';
+        let userName = String('<#' + username + '> ').padStart(16, ' ');
+        line += userName;
         line += message;
+        line += '\u001b[0m';
         return line;
     }
 
     static formatInfoJoin(timestamp: string, username: string): string {
         let line = timestamp + ' ';
         line += ''.padStart(15, '-');
-        line += username + 'entered the chat !'
+        line += username + ' entered the chat !'
         return line;
     }
 
     static formatInfoLeave(timestamp: string, username: string, reason: string): string {
         let line = timestamp + ' ';
         line += ''.padStart(15, ' ');
-        line += username + 'entered the chat !'
+        line += username + ' left the chat ! '
         line += '(' + reason + ')';
         return line
     }

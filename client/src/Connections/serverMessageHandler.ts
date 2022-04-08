@@ -105,7 +105,6 @@ export class ServerMessageHandler {
                     while (len < 3) {
                         DisplayDriver.clearTerminal();
                         pwd = await DisplayDriver.createPrompt(`Please enter a password with at least 3 characters: `);
-                        console.log('entered password: ' + pwd)
                         len = pwd.length;
                     }
                     //let pwd = await DisplayDriver.createPrompt(`Password :`);
@@ -246,7 +245,7 @@ export class ServerMessageHandler {
                 let formated = DisplayDriver.formatChatMessage(timestamp, userName, message, guest, false);
                 DisplayDriver.chat(formated);
             };
-        } 
+        }
         else if (messageType == 'pm') {
             let formatedMessage = DisplayDriver.formatPrivateMessage(
                 messageObject['timestamp'],

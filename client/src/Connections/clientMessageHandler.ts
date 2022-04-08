@@ -97,6 +97,7 @@ export class ClientMessageHandler {
             if(name == 'backspace' || name == 'delete') {//Character removal
                 let direction = (name = 'backspace' ? -1 : 1);
                 this.printCharRemoval(direction);
+                return;
             }
 
             this.printCharacter(char)
@@ -229,7 +230,7 @@ export class ClientMessageHandler {
             case '/pm':
                 commandArgs = command.split(' ', 2);
                 let userName = commandArgs[1];
-                let message = command.substring(commandArgs[1].length + 4);
+                let message = command.substring(commandArgs[1].length + 5);
                 this.sendPrivateMessageRequest(userName, message);
                 break;
 
