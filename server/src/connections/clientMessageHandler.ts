@@ -46,8 +46,14 @@ export class ClientMessageHandler {
     async recvHistory(data: string, socket: Socket) {
         console.log("history from client", socket.data['username']);
         var parsedData = JSON.parse(data);
-        var messages = await this.dbDriver.getRoomMessages(parsedData['room_name']); // get room messages from bdd
-        console.log(messages);
+        var result = await this.dbDriver.getRoomMessages(parsedData['room_name']); // get room messages from bdd
+        if (result == "error") {
+            this.io.to(socket.id).emit("history", JSON.stringify({ "result": result })); // emit error to client
+        } else if (result == "[]") {
+            this.io.to(socket.id).emit("history", JSON.stringify({ "result": "no_messages" }));
+        } else {
+            this.io.to(socket.id).emit("history", result);
+        }
     }
 
     recvAscii(socket: Socket) {
@@ -56,7 +62,6 @@ export class ClientMessageHandler {
 
     async recvAnonymousLogin(data: string, socket: Socket) {
         console.log("anonymous login from client", socket.id);
-        console.log(data)
         var parsedData = JSON.parse(data);
         var result = await this.dbDriver.getUserByUsername(parsedData['username']);
         if (result != "[]") {
@@ -64,9 +69,7 @@ export class ClientMessageHandler {
         } else {
             this.io.to(socket.id).emit("anonymousLogin", JSON.stringify({ "result": "ok" }));
             socket.data['username'] = parsedData['username'];
-            console.log(socket.data['username']);
             this.allSockets[socket.data['username'].toLowerCase()] = socket.id;
-            console.log(this.allSockets[socket.data['username'].toLowerCase()]);
         }
     }
 
@@ -173,12 +176,10 @@ export class ClientMessageHandler {
         var dataParsed = JSON.parse(data);
         dataParsed['timestamp'] = this.getTimestamp();
         var result = await this.dbDriver.addMsg(JSON.stringify(dataParsed), socket.data['username']);
-        console.log("result addMsg=", result);
         if (result == "error") {
             this.io.to(socket.id).emit("msg", JSON.stringify({ "result": result }));
         } else {
             var userId = this.allSockets[socket.data['username'].toLowerCase()];
-            console.log(userId);
             var userType = (userId == undefined) ? "guest" : "registered";
             this.io.to(dataParsed['room_name'].toLowerCase()).emit("msg", JSON.stringify(
                 {
@@ -195,10 +196,8 @@ export class ClientMessageHandler {
     async recvPm(data: string, socket: Socket) {
         console.log("pm from client", socket.data['username']);
         var dataParsed = JSON.parse(data);
-        console.log(data);
         this.io.to(socket.id).emit("pm", JSON.stringify(
             { "result": "user_unregistered", "sender_name": socket.data['username'] }));
-        console.log(this.allSockets);
         var receiverId = this.allSockets[dataParsed['receiver_name'].toLowerCase()];
         if (receiverId == undefined) {
             this.io.to(socket.id).emit("pm", JSON.stringify(

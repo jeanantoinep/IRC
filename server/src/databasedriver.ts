@@ -74,9 +74,10 @@ export class DatabaseDriver {
     }
 
     public async getRoomMessages(roomName: string): Promise<string> {
-        return this.query("SELECT * FROM `message` \
+        return this.query("SELECT message.id, message.message FROM `message` \
                             JOIN `room` ON message.room_id=room.id \
-                            WHERE room.name='" + roomName + "'")
+                            WHERE room.name='" + roomName + "' \
+                            ORDER BY message.id")
             .then((result: any) => {
                 return JSON.stringify(result)
             })
@@ -108,24 +109,20 @@ export class DatabaseDriver {
 
     public async addMsg(data: string, senderName: string): Promise<string | number> {
         var dataParsed = JSON.parse(data);
-        console.log(dataParsed);
         var sender = await this.getUserByUsername(senderName);
         var idSender: string = "";
         var regex = /'/gi;
-        var message: string = "";
+        // var message: string = "";
         if (sender == "[]") {
             idSender = '1';
-            message = dataParsed['timestamp'] + " " + senderName + " " + dataParsed['message'].replace(regex, "\\\'");
-            console.log("message=", message);
         } else {
             idSender = JSON.parse(sender)[0]['id'];
-            message = dataParsed['message'].replace(regex, "\\\'"); // remplacer les ' par des \'
+            // message = dataParsed['message'].replace(regex, "\\\'"); // remplacer les ' par des \'
         }
-        console.log(idSender);
+        var message = dataParsed['timestamp'] + " " + senderName + " " + dataParsed['message'].replace(regex, "\\\'");
         var room = await this.getRoomByName(dataParsed['room_name']);
-        
+
         if (sender == undefined || room == undefined) {
-            console.log("ERROR");
             return 'error'
         }
         return this.query("INSERT INTO `message` (user_id,room_id,message) \
