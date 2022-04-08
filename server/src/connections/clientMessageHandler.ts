@@ -2,6 +2,7 @@ import { Server, Socket } from "socket.io";
 import { ClientToServerEvents, ServerToClientEvents } from "./socketEvents";
 import { DatabaseDriver } from "../databasedriver";
 import { ascii_art } from '../ascii';
+import { on } from "events";
 
 
 export class ClientMessageHandler {
@@ -78,12 +79,14 @@ export class ClientMessageHandler {
 
     async recvAnonymousLogin(data: string, socket: Socket) {
         console.log("anonymous login from client", socket.id);
-        var result = await this.dbDriver.getUserByUsername(JSON.parse(data)['username']);
+        console.log(data)
+        var parsedData = JSON.parse(data);
+        var result = await this.dbDriver.getUserByUsername(parsedData['username']);
         if (result != "[]") {
             this.io.to(socket.id).emit("anonymousLogin", JSON.stringify({ "result": "login_exists" }));
         } else {
             this.io.to(socket.id).emit("anonymousLogin", JSON.stringify({ "result": "ok" }));
-            socket.data['username'] = JSON.parse(result)[0]['username'];
+            socket.data['username'] = parsedData['username'];
             this.allSockets[socket.data['username'].toLowerCase()] = socket.id;
         }
     }
@@ -178,7 +181,7 @@ export class ClientMessageHandler {
 
     async recvListUser(roomName: string, socket: Socket) {
         console.log("listUser from client", socket.data['username']);
-        var roomUsers = await this.io.in(roomName).fetchSockets();
+        var roomUsers = await this.io.in(roomName.toLowerCase()).fetchSockets();
         var usernames: string[] = [];
         roomUsers.forEach(element => {
             usernames.push(element.data['username']);
@@ -193,9 +196,14 @@ export class ClientMessageHandler {
         if (result == "error") {
             this.io.to(socket.id).emit("msg", JSON.stringify({ "result": result }));
         } else {
-            this.io.to(dataParsed['room_name']).emit("msg", JSON.stringify(
+            var userId = this.allSockets[socket.data['username'].toLowerCase()];
+            console.log(userId);
+            var userType = (userId == undefined) ? "guest" : "registered";
+            console.log("userType =", userType);
+            this.io.to(dataParsed['room_name'].toLowerCase()).emit("msg", JSON.stringify(
                 {
                     "username": socket.data['username'],
+                    "user_type": userType,
                     "type": "message",
                     "message": dataParsed["message"],
                     "timestamp": this.getTimestamp()
@@ -207,7 +215,7 @@ export class ClientMessageHandler {
     recvLeaveRoom(roomName: string, socket: Socket) {
         console.log("leaveRoom " + roomName + " from client", socket.data['username']);
         try {
-            socket.leave(roomName);
+            socket.leave(roomName.toLowerCase());
             this.io.to(socket.id).emit("leaveRoom", JSON.stringify({ "result": "ok", "room_name": roomName }));
         } catch (e) {
             console.log(e);
