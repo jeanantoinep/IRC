@@ -3,7 +3,7 @@ import { createPool, Pool } from 'mysql2'
 
 export class DatabaseDriver {
     acceptFriend(friendName: string) {
-      throw new Error("Method not implemented.");
+        throw new Error("Method not implemented.");
     }
     private pool: Pool;
 
@@ -93,14 +93,11 @@ export class DatabaseDriver {
             });
     }
 
-    // : Promise<string | number>
-    public async addMsg(data: string, senderName: string) {
+    public async addMsg(data: string, senderName: string): Promise<string | number> {
         var dataParsed = JSON.parse(data);
         console.log(dataParsed);
         var sender = await this.getUserByUsername(senderName);
-        console.log(JSON.parse(sender)[0]['id']);
         var room = await this.getRoomByName(dataParsed['room_name']);
-        console.log(JSON.parse(room)[0]['id']);
         return this.query("INSERT INTO `message` (user_id,room_id,message) \
                             VALUES (" + JSON.parse(sender)[0]['id'] + "," + JSON.parse(room)[0]['id'] + ",\
                             '" + dataParsed['message'] + "')")
