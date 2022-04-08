@@ -1,6 +1,7 @@
 import DisplayDriver from "../Display/displayDriver";
 import { ServerToClientEvents, ClientToServerEvents } from './socketEvents'
 import { Socket } from 'socket.io-client'
+import { rickRoll } from "../rick";
 
 import { ClientMessageHandler } from "./clientMessageHandler";
 import Core, { Phase } from '../Core/core'
@@ -43,7 +44,7 @@ export class ServerMessageHandler {
     recvAsciiBanner(data: string) {
         this.core.setServerBanner(data);
         this.core.consolePhase(Phase.login);
-    }
+    };
 
     recvConnect() {
         this.clientHandler.sendAsciiRequest();
@@ -192,12 +193,28 @@ export class ServerMessageHandler {
     };
 
     recvListRoom(data: string) {
-        DisplayDriver.print('Rooms list:\n')
+
+        DisplayDriver.print(`
+        ╦═╗┌─┐┌─┐┌┬┐  ╦  ┬┌─┐┌┬┐
+        ╠╦╝│ ││ ││││  ║  │└─┐ │
+        ╩╚═└─┘└─┘┴ ┴  ╩═╝┴└─┘ ┴`+'\n')
         let roomsArray = JSON.parse(data);
 
         let rows = 0;
-        roomsArray.forEach((room: any) => {
-            DisplayDriver.print(room['name'] + '\n');
+        roomsArray.forEach((room:any) => {
+           DisplayDriver.print('╔');
+            for(let i = 0; i < room['name'].toString().length + 2; i++) {
+              DisplayDriver.print('═');
+            };
+            DisplayDriver.print('╗' + '\n');
+            DisplayDriver.print('║ ');
+            DisplayDriver.print(room['name']);
+            DisplayDriver.print(' ║' + '\n');
+            DisplayDriver.print('╚');
+            for(let i = 0; i < room['name'].toString().length + 2; i++) {
+              DisplayDriver.print('═');
+            };
+            DisplayDriver.print('╝' + '\n');
             rows++;
         });
 
@@ -217,8 +234,10 @@ export class ServerMessageHandler {
             let timestamp = messageObject['timestamp'];
             let userName = messageObject['username'];
             let message = messageObject['message'];
-            if (userName == this.clientHandler.getUsername()) {
-                DisplayDriver.chat(`${timestamp} <\x1b[32m@${userName}\x1b[0m> ${message}`);
+            if (message == 'rickroll') {
+              DisplayDriver.chat(rickRoll);
+            } else if (userName == this.clientHandler.getUsername()) {
+              DisplayDriver.chat(`${timestamp} <\x1b[32m@${userName}\x1b[0m> ${message}`);
             } else if (userName == 'Cocoleplusbo') {
                 DisplayDriver.chat(`${timestamp} <\x1b[95m@${userName}\x1b[0m> ${message}`);
             } else {
@@ -235,7 +254,7 @@ export class ServerMessageHandler {
             let timestamp = messageObject['timestamp'];
             let userName = messageObject['username'];
             DisplayDriver.chat(`${timestamp} <@${userName}> entered the chat !`);
-        } 
+        }
         else if (messageType == 'leave') {
             let timestamp = messageObject['timestamp'];
             let reason = messageObject['reason'];
