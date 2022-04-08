@@ -51,6 +51,18 @@ export class DatabaseDriver {
             })
     }
 
+    public async addUser(userData: string): Promise<string | number> {
+        var dataParsed = JSON.parse(userData);
+        return this.query("INSERT INTO `user` (username,password) VALUES (\
+            '" + dataParsed['username'] + "','" + dataParsed['password'] + "')")
+            .then((result: any) => {
+                return result['insertId'] as number
+            })
+            .catch((error: string) => {
+                return 'error'
+            });
+    }
+
     public async getRooms(): Promise<string> {
         return this.query("SELECT * FROM `room` ORDER BY name")
             .then((result: any) => {
