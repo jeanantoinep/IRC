@@ -86,7 +86,6 @@ export default class DisplayDriver {
         stdout.cursorTo(0);
         //stdout.moveCursor(0, -1);
         stdout.write(msg + '\n');
-        stdout.write(this.currentPrompt);
         //this.rl.prompt(true);
     }
 
