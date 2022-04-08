@@ -25,11 +25,9 @@ export default class Core{
 
         this.clientMessageHandler = new ClientMessageHandler(this.connection.getSocket());
         this.serverMessageHandler = new ServerMessageHandler(
-                                        this.connection.getSocket(), 
+                                        this.connection.getSocket(),
                                         this.clientMessageHandler,
                                         this);
-
-
     };
 
     public setServerBanner(banner: string) {
@@ -82,4 +80,5 @@ export default class Core{
               break;
         };
     };
+  };
 };

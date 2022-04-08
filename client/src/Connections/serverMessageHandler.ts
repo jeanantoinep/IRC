@@ -91,30 +91,42 @@ export class ServerMessageHandler {
 
         if(returnData['result'] == 'need_auth') {
             let answer = await DisplayDriver.createPrompt(`Username isn't registered: do you want to claim it ? (yes/no): `);
+            let loop = true;
+            let repeat = false;
 
-            if(answer.startsWith('y')) {
-                let len = 0;
-                let pwd = '';
-                while(len < 3) {
-                    pwd = await DisplayDriver.createPrompt(`Password: `);
-                    console.log('entered password: ' + pwd)
-                    len = pwd.length;
-                }
-                //let pwd = await DisplayDriver.createPrompt(`Password: `);
-                this.clientHandler.sendRegisterRequest(this.clientHandler.getUsername(), pwd);
-                return;
-            }
-
-            answer = await DisplayDriver.createPrompt(`Are you satisfied with the username ${this.clientHandler.getUsername()} (yes/no): `);
-
-            if(answer.startsWith('y')) {
-                this.clientHandler.sendAnonymousLoginRequest(this.clientHandler.getUsername());
-                return;
-            }
-            else {
-                this.core.startLoginPhase();
-            }
-        }
+            while(loop) {
+                if (repeat) {
+                  DisplayDriver.clearTerminal();
+                  answer = await DisplayDriver.createPrompt(`Please answer yes or no:`);
+                };
+                if (answer === 'yes' || answer === 'y') {
+                    let len = 0;
+                    let pwd = '';
+                    while(len < 3) {
+                        DisplayDriver.clearTerminal();
+                        pwd = await DisplayDriver.createPrompt(`Please enter a password with at least 3 characters: `);
+                        console.log('entered password: ' + pwd)
+                        len = pwd.length;
+                    }
+                    //let pwd = await DisplayDriver.createPrompt(`Password :`);
+                    this.clientHandler.sendRegisterRequest(this.clientHandler.getUsername(), pwd);
+                    loop = false;
+                    return;
+                } else if (answer === 'no' || answer === 'n') {
+                    answer = await DisplayDriver.createPrompt(`Are you satisfied with the username ${this.clientHandler.getUsername()} (yes/no): `);
+                    if(answer.startsWith('y')) {
+                        this.clientHandler.sendAnonymousLoginRequest(this.clientHandler.getUsername());
+                        return;
+                    }
+                    else {
+                        this.core.startLoginPhase();
+                    };
+                    loop = false;
+                } else {
+                    repeat = true;
+                };
+            };
+        };
 
         if(returnData['result'] == 'wrong_pwd'){
             DisplayDriver.print('Invalid password !\n');
