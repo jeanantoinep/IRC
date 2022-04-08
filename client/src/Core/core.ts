@@ -40,14 +40,13 @@ export default class Core{
     }
 
     public async startLoginPhase() {
-        DisplayDriver.print('\n')
+        DisplayDriver.printBanner(this.serverBanner, true, true);
         await this.clientMessageHandler.startLoginProcess();
         this.clientMessageHandler.setPhase(Phase.login);
     }
 
     public async startRoomsListPhase() {
-        DisplayDriver.clearTerminal();
-        DisplayDriver.print(this.serverBanner);
+        DisplayDriver.printBanner(this.serverBanner, true, true);
         DisplayDriver.setCurrentPrompt('> ');
         this.clientMessageHandler.sendRoomsListRequest();
         this.clientMessageHandler.setPhase(Phase.roomList);
