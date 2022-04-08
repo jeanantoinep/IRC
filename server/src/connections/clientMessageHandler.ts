@@ -51,14 +51,23 @@ export class ClientMessageHandler {
                 { "result": "user_unregistered", "sender_name": socket.data['username'] }));
         } else {
             console.log(this.allSockets);
-            console.log(this.allSockets[dataParsed['receiver_name']]);
-            var receiverId = this.allSockets[dataParsed['receiver_name']];
+            var receiverId = this.allSockets[dataParsed['receiver_name'].toLowerCase()];
             if (receiverId == undefined) {
-                // this.io.to()
+                this.io.to(socket.id).emit("pm", JSON.stringify(
+                    { 
+                        "result": "user_unknown",
+                        "username": dataParsed['receiver_name'].toLowerCase() 
+                    }))
                 console.log("SOCKET NOT FOUND");
             } else {
-                this.io.to(receiverId).emit("pm", JSON.stringify(
-                    { "sender_name": socket.data['username'], "message": dataParsed["message"] }));
+                this.io.to(receiverId).emit("msg", JSON.stringify(
+                    {
+                        "username": socket.data['username'],
+                        "type": "pm",
+                        "message": dataParsed["message"],
+                        "timestamp": this.getTimestamp()
+                    }))
+                // { "sender_name": socket.data['username'], "message": dataParsed["message"] }));
             }
         }
     }
@@ -75,7 +84,7 @@ export class ClientMessageHandler {
         } else {
             this.io.to(socket.id).emit("anonymousLogin", JSON.stringify({ "result": "ok" }));
             socket.data['username'] = JSON.parse(result)[0]['username'];
-            this.allSockets[socket.data['username']] = socket.id;
+            this.allSockets[socket.data['username'].toLowerCase()] = socket.id;
         }
     }
 
@@ -97,7 +106,7 @@ export class ClientMessageHandler {
                 if (password == JSON.parse(result2)[0]['password']) { // if password is OK
                     this.io.to(socket.id).emit("login", JSON.stringify({ "result": "ok" }));
                     socket.data['username'] = JSON.parse(result2)[0]['username'];
-                    this.allSockets[socket.data['username']] = socket.id;
+                    this.allSockets[socket.data['username'].toLowerCase()] = socket.id;
                 } else {
                     this.io.to(socket.id).emit("login", JSON.stringify({ 'result': 'wrong_pwd' }));
                 }
@@ -124,7 +133,7 @@ export class ClientMessageHandler {
                     "result": "ok", "username": dataParsed['username']
                 }));
                 socket.data['username'] = dataParsed['username'];
-                this.allSockets[socket.data['username']] = socket.id;
+                this.allSockets[socket.data['username'].toLowerCase()] = socket.id;
             }
         }
     }
