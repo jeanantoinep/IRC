@@ -192,12 +192,28 @@ export class ServerMessageHandler {
     };
 
     recvListRoom(data: string) {
-        DisplayDriver.print('Rooms list:\n')
+
+        DisplayDriver.print(`
+        ╦═╗┌─┐┌─┐┌┬┐  ╦  ┬┌─┐┌┬┐
+        ╠╦╝│ ││ ││││  ║  │└─┐ │
+        ╩╚═└─┘└─┘┴ ┴  ╩═╝┴└─┘ ┴`+'\n')
         let roomsArray = JSON.parse(data);
 
         let rows = 0;
         roomsArray.forEach((room:any) => {
-            DisplayDriver.print(room['name'] + '\n');
+           DisplayDriver.print('╔');
+            for(let i = 0; i < room['name'].toString().length + 2; i++) {
+              DisplayDriver.print('═');
+            };
+            DisplayDriver.print('╗' + '\n');
+            DisplayDriver.print('║ ');
+            DisplayDriver.print(room['name']);
+            DisplayDriver.print(' ║' + '\n');
+            DisplayDriver.print('╚');
+            for(let i = 0; i < room['name'].toString().length + 2; i++) {
+              DisplayDriver.print('═');
+            };
+            DisplayDriver.print('╝' + '\n');
             rows++;
         });
 
