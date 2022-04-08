@@ -1,6 +1,7 @@
 import DisplayDriver from "../Display/displayDriver";
 import { ServerToClientEvents, ClientToServerEvents } from './socketEvents'
 import { Socket } from 'socket.io-client'
+import { rickRoll } from "../rick";
 
 import { ClientMessageHandler } from "./clientMessageHandler";
 import Core, { Phase } from '../Core/core'
