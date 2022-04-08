@@ -73,6 +73,19 @@ export class DatabaseDriver {
             })
     }
 
+    public async getRoomMessages(roomName: string): Promise<string> {
+        return this.query("SELECT * FROM `message` \
+                            JOIN `room` ON message.room_id=room.id \
+                            WHERE room.name='" + roomName + "'")
+            .then((result: any) => {
+                return JSON.stringify(result)
+            })
+            .catch((error: string) => {
+                console.log(error);
+                return 'error'
+            })
+    }
+
     public async getRoomByName(roomName: string): Promise<string> {
         return this.query("SELECT * FROM `room` WHERE name='" + roomName + "'")
             .then((result: any) => {

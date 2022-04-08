@@ -285,7 +285,11 @@ export class ClientMessageHandler {
             messageCount = 20;
         };
 
-        this.socket.emit('history', messageCount);
+        var data = {
+            "room_name":this.roomName,
+            "message_count":messageCount
+        };
+        this.socket.emit('history', JSON.stringify(data));
         return;
     };
 

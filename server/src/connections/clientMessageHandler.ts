@@ -35,6 +35,7 @@ export class ClientMessageHandler {
             socket.on("listRoom", () => this.recvListRoom(socket));
             socket.on("addRoom", (roomName: string) => this.recvAddRoom(roomName, socket));
             socket.on("joinRoom", (roomName: string) => this.recvJoinRoom(roomName, socket));
+            socket.on("history", (data: string) => this.recvHistory(data, socket));
             socket.on("msg", (data: string) => this.recvMsg(data, socket));
             socket.on("listUser", (roomName: string) => this.recvListUser(roomName, socket));
             socket.on("leaveRoom", (roomName: string) => this.recvLeaveRoom(roomName, socket));
@@ -42,30 +43,11 @@ export class ClientMessageHandler {
         })
     }
 
-    async recvPm(data: string, socket: Socket) {
-        console.log("pm from client", socket.data['username']);
-        var dataParsed = JSON.parse(data);
-        console.log(data);
-        this.io.to(socket.id).emit("pm", JSON.stringify(
-            { "result": "user_unregistered", "sender_name": socket.data['username'] }));
-        console.log(this.allSockets);
-        var receiverId = this.allSockets[dataParsed['receiver_name'].toLowerCase()];
-        if (receiverId == undefined) {
-            this.io.to(socket.id).emit("pm", JSON.stringify(
-                {
-                    "result": "user_unknown",
-                    "username": dataParsed['receiver_name'].toLowerCase()
-                }))
-            console.log("SOCKET NOT FOUND");
-        } else {
-            this.io.to(receiverId).emit("msg", JSON.stringify(
-                {
-                    "username": socket.data['username'],
-                    "type": "pm",
-                    "message": dataParsed["message"],
-                    "timestamp": this.getTimestamp()
-                }))
-        }
+    async recvHistory(data: string, socket: Socket) {
+        console.log("history from client", socket.data['username']);
+        var parsedData = JSON.parse(data);
+        var messages = await this.dbDriver.getRoomMessages(parsedData['room_name']); // get room messages from bdd
+        console.log(messages);
     }
 
     recvAscii(socket: Socket) {
@@ -207,6 +189,32 @@ export class ClientMessageHandler {
                     "timestamp": this.getTimestamp()
                 }
             ));
+        }
+    }
+
+    async recvPm(data: string, socket: Socket) {
+        console.log("pm from client", socket.data['username']);
+        var dataParsed = JSON.parse(data);
+        console.log(data);
+        this.io.to(socket.id).emit("pm", JSON.stringify(
+            { "result": "user_unregistered", "sender_name": socket.data['username'] }));
+        console.log(this.allSockets);
+        var receiverId = this.allSockets[dataParsed['receiver_name'].toLowerCase()];
+        if (receiverId == undefined) {
+            this.io.to(socket.id).emit("pm", JSON.stringify(
+                {
+                    "result": "user_unknown",
+                    "username": dataParsed['receiver_name'].toLowerCase()
+                }))
+            console.log("SOCKET NOT FOUND");
+        } else {
+            this.io.to(receiverId).emit("msg", JSON.stringify(
+                {
+                    "username": socket.data['username'],
+                    "type": "pm",
+                    "message": dataParsed["message"],
+                    "timestamp": this.getTimestamp()
+                }))
         }
     }
 
