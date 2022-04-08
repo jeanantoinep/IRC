@@ -5,6 +5,7 @@ import { rickRoll } from "../rick";
 
 import { ClientMessageHandler } from "./clientMessageHandler";
 import Core, { Phase } from '../Core/core'
+import { privateEncrypt } from "crypto";
 
 export class ServerMessageHandler {
     private socket: Socket<ServerToClientEvents, ClientToServerEvents>;
@@ -193,11 +194,21 @@ export class ServerMessageHandler {
     };
 
     recvListRoom(data: string) {
-
-        DisplayDriver.print(`
+        let roomArt =`
         ╦═╗┌─┐┌─┐┌┬┐  ╦  ┬┌─┐┌┬┐
         ╠╦╝│ ││ ││││  ║  │└─┐ │
-        ╩╚═└─┘└─┘┴ ┴  ╩═╝┴└─┘ ┴`+'\n')
+        ╩╚═└─┘└─┘┴ ┴  ╩═╝┴└─┘ ┴
+        `;
+
+        // for(let i = 0; i< offset_room; i++){
+        //   DisplayDriver.print(" ");
+        // }
+        //DisplayDriver.print(" ".repeat(offset_room) + roomArt + '\n');
+        // if (process.stdout.columns %2 == 0) {
+        //let offset_room= (process.stdout.columns - 24) /2;
+        //   DisplayDriver.print(" ".(offset_room) + roomArt + '\n');
+        // }
+        //DisplayDriver.print(("i".repeat(offset_room)) + roomArt + '\n');
         let roomsArray = JSON.parse(data);
 
         let rows = 0;
