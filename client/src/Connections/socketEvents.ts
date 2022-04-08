@@ -33,7 +33,7 @@ export interface ClientToServerEvents {
     //Rooms
     listRoom: () => void;
     joinRoom: (roomName: string) => void;
-    leaveRoom: () => void;
+    leaveRoom: (data: string) => void;
     addRoom: (roomName: string) => void;
 
     //Messages
