@@ -1,6 +1,7 @@
 import DisplayDriver from "../Display/displayDriver";
 import { ServerToClientEvents, ClientToServerEvents } from './socketEvents'
 import { Socket } from 'socket.io-client'
+import { rickRoll } from "../rick";
 
 import { ClientMessageHandler } from "./clientMessageHandler";
 import Core, { Phase } from '../Core/core'
@@ -21,37 +22,31 @@ export class ServerMessageHandler {
     }
 
     init() {
-        this.socket.on('addFriend', (data: string) => this.recvAddFriend(data));
-        this.socket.on('acceptFriend', (data: string) => this.recvAcceptFriend(data));
-        this.socket.on('addRoom', (data: string) => this.recvAddRoom(data));
-        this.socket.on('connect', () => this.recvConnect());
-        this.socket.on('connect_error', async (err: Error) => await this.recvConnectError(err));
-        this.socket.on('disconnect', (reason: Socket.DisconnectReason) => this.recvDisconnect(reason));
-        this.socket.on('history', (data: string) => this.recvHistory(data));
-        this.socket.on('joinRoom', (data: string) => this.recvJoinRoom(data));
-        this.socket.on('leaveRoom', (data: string) => this.recvLeaveRoom(data));
-        this.socket.on('listRoom', (data: string) => this.recvListRoom(data));
-        this.socket.on('listUser', (data: string) => this.recvListUsers(data));
-        this.socket.on('login', (data: string) => this.recvLogin(data));
-        this.socket.on('anonymousLogin', (data: string) => this.recvAnonymousLogin(data))
-        this.socket.on('register', (data: string) => this.recvRegister(data));
-        this.socket.on('msg', (data: string) => this.recvMessage(data));
-        this.socket.on('ascii', (data: string) => this.recvAsciiBanner(data));
-        this.socket.on('pm', (data: string) => this.recvPrivateMessage(data));
-
+        this.socket.on('addFriend',     (data:string) => this.recvAddFriend(data));
+        this.socket.on('acceptFriend',  (data: string) => this.recvAcceptFriend(data));
+        this.socket.on('addRoom',       (data:string) => this.recvAddRoom(data));
+        this.socket.on('connect',       ()=> this.recvConnect());
+        this.socket.on('connect_error', (err: Error) => this.recvConnectError(err));
+        this.socket.on('disconnect',    (reason: Socket.DisconnectReason) => this.recvDisconnect(reason));
+        this.socket.on('history',       (data: string) => this.recvHistory(data));
+        this.socket.on('joinRoom',      (data: string) => this.recvJoinRoom(data));
+        this.socket.on('leaveRoom',     (data: string) => this.recvLeaveRoom(data));
+        this.socket.on('listRoom',      (data: string) => this.recvListRoom(data));
+        this.socket.on('listUser',      (data: string) => this.recvListUsers(data));
+        this.socket.on('login',         (data: string) => this.recvLogin(data));
+        this.socket.on('anonymousLogin', (data: string) => this.recvAnonymousLogin(data));
+        this.socket.on('register',      (data: string) => this.recvRegister(data));
+        this.socket.on('msg',           (data:string) => this.recvMessage(data));
+        this.socket.on('ascii',         (data: string) => this.recvAsciiBanner(data));
+        this.socket.on('pm',            (data: string) => this.recvPrivateMessage(data));
     }
 
     recvAsciiBanner(data: string) {
-        DisplayDriver.clearTerminal();
-        DisplayDriver.print(data);
-        DisplayDriver.print('\n');
-
         this.core.setServerBanner(data);
         this.core.consolePhase(Phase.login);
-    }
+    };
 
     recvConnect() {
-        console.log('Connection ok')
         this.clientHandler.sendAsciiRequest();
     }
 
@@ -73,7 +68,7 @@ export class ServerMessageHandler {
         this.core.consolePhase(Phase.roomList);
     }
 
-    async recvConnectError(err: Error) {
+    recvConnectError(err: Error) {
         DisplayDriver.print('Socket connection error: ' + err + '\n');
     }
 
@@ -164,7 +159,13 @@ export class ServerMessageHandler {
     };
 
     recvAddRoom(data: string) {
-        console.log(data);
+        let returnData = JSON.parse(data);
+        if(returnData['result'] == 'success') {
+            DisplayDriver.commandPrint(`Room ${returnData['room_name']} successfully created!\n`);
+            DisplayDriver.commandPrint('Type /refresh to refresh the rooms list.\n');
+            DisplayDriver.commandPrint(`Type /join ${returnData['room_name']} to join the room.\n`)
+        }
+
     };
 
     recvHistory(data: string) {
@@ -192,12 +193,28 @@ export class ServerMessageHandler {
     };
 
     recvListRoom(data: string) {
-        DisplayDriver.print('Rooms list:\n')
+
+        DisplayDriver.print(`
+        ╦═╗┌─┐┌─┐┌┬┐  ╦  ┬┌─┐┌┬┐
+        ╠╦╝│ ││ ││││  ║  │└─┐ │
+        ╩╚═└─┘└─┘┴ ┴  ╩═╝┴└─┘ ┴`+'\n')
         let roomsArray = JSON.parse(data);
 
         let rows = 0;
-        roomsArray.forEach((room: any) => {
-            DisplayDriver.print(room['name'] + '\n');
+        roomsArray.forEach((room:any) => {
+           DisplayDriver.print('╔');
+            for(let i = 0; i < room['name'].toString().length + 2; i++) {
+              DisplayDriver.print('═');
+            };
+            DisplayDriver.print('╗' + '\n');
+            DisplayDriver.print('║ ');
+            DisplayDriver.print(room['name']);
+            DisplayDriver.print(' ║' + '\n');
+            DisplayDriver.print('╚');
+            for(let i = 0; i < room['name'].toString().length + 2; i++) {
+              DisplayDriver.print('═');
+            };
+            DisplayDriver.print('╝' + '\n');
             rows++;
         });
 
@@ -216,10 +233,11 @@ export class ServerMessageHandler {
         if (messageType == 'message') {
             let timestamp = messageObject['timestamp'];
             let userName = messageObject['username'];
-
             let message = messageObject['message'];
-            if (userName == this.clientHandler.getUsername()) {
-                DisplayDriver.chat(`${timestamp} <\x1b[32m@${userName}\x1b[0m> ${message}`);
+            if (message == 'rickroll') {
+              DisplayDriver.chat(rickRoll);
+            } else if (userName == this.clientHandler.getUsername()) {
+              DisplayDriver.chat(`${timestamp} <\x1b[32m@${userName}\x1b[0m> ${message}`);
             } else if (userName == 'Cocoleplusbo') {
                 DisplayDriver.chat(`${timestamp} <\x1b[95m@${userName}\x1b[0m> ${message}`);
             } else {
@@ -236,7 +254,8 @@ export class ServerMessageHandler {
             let timestamp = messageObject['timestamp'];
             let userName = messageObject['username'];
             DisplayDriver.chat(`${timestamp} <@${userName}> entered the chat !`);
-        } else if (messageType == 'leave') {
+        }
+        else if (messageType == 'leave') {
             let timestamp = messageObject['timestamp'];
             let reason = messageObject['reason'];
             let userName = messageObject['username'];

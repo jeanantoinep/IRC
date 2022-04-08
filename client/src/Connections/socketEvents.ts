@@ -9,7 +9,7 @@ export interface ServerToClientEvents {
     joinRoom: (data: string) => void; // room joined successfully ou erreur
     leaveRoom: (data: string) => void; // [toto] has left the chat ou [toto] connection lost
     addRoom: (data: string) => void; // succès ou erreur
-    
+
     //Messages
     history: (data: string) => void;
     msg: (data: string) => void;
@@ -22,6 +22,7 @@ export interface ServerToClientEvents {
 
     //Misc
     ascii: (data: string) => void;
+    rick: (data: string) => void;
 }
 
 export interface ClientToServerEvents {
@@ -33,7 +34,7 @@ export interface ClientToServerEvents {
     //Rooms
     listRoom: () => void;
     joinRoom: (roomName: string) => void;
-    leaveRoom: () => void;
+    leaveRoom: (data: string) => void;
     addRoom: (roomName: string) => void;
 
     //Messages
@@ -47,4 +48,5 @@ export interface ClientToServerEvents {
 
     //Misc
     ascii: () => void;
+    rick: () => void;
 }
