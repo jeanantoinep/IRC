@@ -121,8 +121,7 @@ export class ServerMessageHandler {
                     if(answer.startsWith('y')) {
                         this.clientHandler.sendAnonymousLoginRequest(this.clientHandler.getUsername());
                         return;
-                    }
-                    else {
+                    } else {
                         this.core.startLoginPhase();
                     };
                     loop = false;
@@ -135,41 +134,41 @@ export class ServerMessageHandler {
         if(returnData['result'] == 'wrong_pwd'){
             DisplayDriver.print('Invalid password !\n');
             this.core.startLoginPhase();
-        }
+        };
 
         if(returnData['result'] == 'ok') {
             this.core.consolePhase(Phase.roomList);
-        }
-    }
+        };
+    };
 
     async recvAnonymousLogin(data: string) {
         let returnData = JSON.parse(data);
         if(returnData['result'] == 'ok') {
             this.core.consolePhase(Phase.roomList);
-        }
+        };
 
         if(returnData['result'] == 'login_exists') {
             DisplayDriver.print('Username is already in use ! Please pick another one\n')
             let answer = await DisplayDriver.createPrompt(`Username: `);
 
-        }
-    }
+        };
+    };
 
     recvAddFriend(data: string) {
 
-    }
+    };
 
     recvAcceptFriend(data:string){
 
-    }
+    };
 
     recvAddRoom(data: string) {
-        console.log(data)
-    }
+        console.log(data);
+    };
 
     recvHistory(data: string) {
 
-    }
+    };
 
     recvJoinRoom(data: string) {
         console.log(data)
@@ -179,17 +178,17 @@ export class ServerMessageHandler {
             this.core.consolePhase(Phase.chat);
             this.clientHandler.setRoomName(returnData['room_name']);
             return;
-        }
+        };
 
         if(returnData['result'] == 'room_unknown')
             DisplayDriver.print(`Room ${returnData['room_name']} doesn't exist!\n`);
-    }
+    };
 
     recvLeaveRoom(data: string) {
         DisplayDriver.leaveChat();
         this.core.consolePhase(Phase.roomList);
         //DisplayDriver.pauseInput();
-    }
+    };
 
     recvListRoom(data: string) {
         DisplayDriver.print('Rooms list:\n')
@@ -203,43 +202,35 @@ export class ServerMessageHandler {
 
         DisplayDriver.scrollDown(rows + this.core.getServerBannerSize());
         DisplayDriver.print(DisplayDriver.getCurrentPrompt());
-
-    }
+    };
 
     recvListUsers(data: string) {
         DisplayDriver.print(data);
-    }
+    };
 
     recvMessage(messageData: string) {
         let messageObject = JSON.parse(messageData);
         let messageType = messageObject['type'];
 
         if(messageType == 'message') {
-            let formatedMessage = DisplayDriver.formatChatMessage(
-                messageObject['timestamp'],
-                messageObject['username'],
-                messageObject['message']);
-            DisplayDriver.chat(formatedMessage);
-        }
-        else if(messageType == 'pm') {
-            let formatedMessage = DisplayDriver.formatPrivateMessage(
-                messageObject['timestamp'],
-                messageObject['username'],
-                messageObject['message']);
-            DisplayDriver.chat(formatedMessage);
-        }
-        else if (messageType == 'join') {
-            let formatedMessage = DisplayDriver.formatInfoJoin(
-                messageObject['timestamp'],
-                messageObject['username']);
-            DisplayDriver.chat(formatedMessage);
-        }
-        else if (messageType == 'leave') {
-            let formatedMessage = DisplayDriver.formatInfoLeave(
-                messageObject['timestamp'],
-                messageObject['reason'],
-                messageObject['username']);
-            DisplayDriver.chat(formatedMessage);
-        }
-    }
-}
+            let timestamp = messageObject['timestamp'];
+            let userName = messageObject['username'];
+
+            let message = messageObject['message'];
+            if (userName == this.clientHandler.getUsername()) {
+              DisplayDriver.chat(`${timestamp} <\x1b[32m@${userName}\x1b[0m> ${message}`);
+            } else {
+              DisplayDriver.chat(`${timestamp} <\x1b[31m@${userName}\x1b[0m> ${message}`);
+            };
+        } else if (messageType == 'join') {
+            let timestamp = messageObject['timestamp'];
+            let userName = messageObject['username'];
+            DisplayDriver.chat(`${timestamp} <@${userName}> entered the chat !`);
+        } else if (messageType == 'leave') {
+            let timestamp = messageObject['timestamp'];
+            let reason = messageObject['reason'];
+            let userName = messageObject['username'];
+            DisplayDriver.chat(`${timestamp} <@${userName}> left the chat (${reason}) !`);
+        };
+    };
+};

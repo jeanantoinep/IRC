@@ -22,7 +22,7 @@ export default class DisplayDriver {
     static setCurrentPrompt(prompt:string) {
         this.currentPrompt = prompt;
     }
-    
+
     static createReadlineInterface() : readline.Interface {
         let rl = readline.createInterface({
             input: stdin,
@@ -86,7 +86,6 @@ export default class DisplayDriver {
         stdout.cursorTo(0);
         //stdout.moveCursor(0, -1);
         stdout.write(msg + '\n');
-        stdout.write(this.currentPrompt);
         //this.rl.prompt(true);
     }
 
@@ -113,7 +112,7 @@ export default class DisplayDriver {
             this.rl.question(message, (input) => {
                 this.currentPrompt = '';
                 //DisplayDriver.print('\n');
-                resolve(input);    
+                resolve(input);
             });
         });
         return answer;
