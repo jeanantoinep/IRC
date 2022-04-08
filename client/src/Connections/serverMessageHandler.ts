@@ -215,27 +215,31 @@ export class ServerMessageHandler {
         let messageType = messageObject['type'];
 
         if(messageType == 'message') {
-            let timestamp:string = messageObject['timestamp'];
-            let userName:string = messageObject['username'];
-            let message:string = messageObject['message'];
-            DisplayDriver.chat(`${timestamp} ${('<@'+userName+'>').padStart(15, ' ')} ${message}`);
+            let formatedMessage = DisplayDriver.formatChatMessage(
+                messageObject['timestamp'],
+                messageObject['username'],
+                messageObject['message']);
+            DisplayDriver.chat(formatedMessage);
         }
         else if(messageType == 'pm') {
-            let timestamp = messageObject['timestamp'];
-            let userName = messageObject['username'];
-            let message = messageObject['message'];
-            DisplayDriver.chat(`${timestamp} ${('<@'+userName+'>').padStart(15, ' ')} ${message}`);
+            let formatedMessage = DisplayDriver.formatPrivateMessage(
+                messageObject['timestamp'],
+                messageObject['username'],
+                messageObject['message']);
+            DisplayDriver.chat(formatedMessage);
         }
         else if (messageType == 'join') {
-            let timestamp = messageObject['timestamp'];
-            let userName = messageObject['username'];
-            DisplayDriver.chat(`${timestamp} <@${userName}> entered the chat !`);
+            let formatedMessage = DisplayDriver.formatInfoJoin(
+                messageObject['timestamp'],
+                messageObject['username']);
+            DisplayDriver.chat(formatedMessage);
         }
         else if (messageType == 'leave') {
-            let timestamp = messageObject['timestamp'];
-            let reason = messageObject['reason'];
-            let userName = messageObject['username'];
-            DisplayDriver.chat(`${timestamp} <@${userName}> left the chat (${reason}) !`);
+            let formatedMessage = DisplayDriver.formatInfoLeave(
+                messageObject['timestamp'],
+                messageObject['reason'],
+                messageObject['username']);
+            DisplayDriver.chat(formatedMessage);
         }
     }
 }
