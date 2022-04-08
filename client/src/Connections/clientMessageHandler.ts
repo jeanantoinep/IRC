@@ -5,6 +5,7 @@ import {ServerToClientEvents, ClientToServerEvents} from './socketEvents';
 import {Socket} from 'socket.io-client';
 
 import { Phase } from "../Core/core";
+import { hasOnlyExpressionInitializer } from 'typescript';
 
 export class ClientMessageHandler {
     private socket: Socket<ServerToClientEvents, ClientToServerEvents>;
@@ -45,18 +46,18 @@ export class ClientMessageHandler {
         //stdout.moveCursor(0, -1);
     }
 
-    private printCharRemoval() {
+    private printCharRemoval(direction: number) {
         this.inputData = DisplayDriver.getDriver().line;
         stdout.cursorTo(0);
         stdout.write(DisplayDriver.getCurrentPrompt());
         stdout.write(this.inputData);
         stdout.clearLine(1);
-        //stdout.moveCursor(1, 0);
+        //stdout.moveCursor(direction, 0);
     }
 
     private initInputHandlers() {
         stdin.on('SIGTERM', (data: Buffer) => {
-            process.exit(1);
+            process.exit(0);
         });
 
         // stdin.on('keypress', (...input) => {
@@ -64,14 +65,38 @@ export class ClientMessageHandler {
             let char: string = data[0];
             let sequence: string = data[1].sequence;
             let name = data[1].name;
+            //console.log(data)
+            
+            if(name == 'c' && data[1].ctrl == true)
+                process.exit(0);
 
             if(name == 'return' && this.inputData != ''){//End of line detection
                 this.printEol();
                 return;
             }
 
+            // if(name == 'right') {
+            //     if(DisplayDriver.getCursorPos() <= this.inputData.length) {
+            //         DisplayDriver.moveCursor(1, 0);
+            //         console.log('Pos: ' + DisplayDriver.getCursorPos()+' , length: ' + this.inputData.length)
+            //         //stdout.moveCursor(1, 0);
+            //     }
+            //         return;
+            // }
+            
+            // if(name == 'left') {
+            //      //console.log(DisplayDriver.getCursorPos().cols)
+            //     if(DisplayDriver.getCursorPos() > 0) {
+            //         DisplayDriver.moveCursor(-1, 0);
+            //         //stdout.moveCursor(-1, 0);
+            //     }
+            //     return;
+            //     //console.log(DisplayDriver.getCursorPos())
+            // }
+
             if(name == 'backspace' || name == 'delete') {//Character removal
-                this.printCharRemoval();
+                let direction = (name = 'backspace' ? -1 : 1);
+                this.printCharRemoval(direction);
                 return;
             }
 
