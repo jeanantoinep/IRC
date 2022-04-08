@@ -63,7 +63,7 @@ export class ClientMessageHandler {
     }
 
     async recvPm(data: string, socket: Socket) {
-        console.log("pm from client", socket.data['username']);
+        console.log("pm from client", socket.data['username'], "to", JSON.parse(data)['']);
         var dataParsed = JSON.parse(data);
         var result = await this.dbDriver.getUserByUsername(dataParsed['receiver_name']);
         if (result == "[]") {
@@ -139,7 +139,7 @@ export class ClientMessageHandler {
     }
 
     async recvJoinRoom(roomName: string, socket: Socket) {
-        console.log("joinRoom from client", socket.data['username']);
+        console.log("joinRoom " + roomName + " from client", socket.data['username']);
         var result = await this.dbDriver.getRoomByName(roomName);
         if (result != "[]") {
             try {
@@ -183,7 +183,7 @@ export class ClientMessageHandler {
     }
 
     recvLeaveRoom(roomName: string, socket: Socket) {
-        console.log("leaveRoom from client", socket.data['username']);
+        console.log("leaveRoom " + roomName + " from client", socket.data['username']);
         try {
             socket.leave(roomName);
             this.io.to(socket.id).emit("leaveRoom", JSON.stringify({ "result": "ok", "room_name": roomName }));

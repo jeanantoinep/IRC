@@ -40,7 +40,7 @@ export class ClientMessageHandler {
         stdin.on('keypress', (...data:any) => {
             let char: string = data[0];
             let sequence: string = data[1].sequence;
-
+            
             // if(this.currentPhase != Phase.chat &&
             //     this.currentPhase != Phase.roomList)
             //      return;
