@@ -86,12 +86,24 @@ export default class DisplayDriver {
         stdout.cursorTo(0);
         //stdout.moveCursor(0, -1);
         stdout.write(msg + '\n');
-        //stdout.moveCursor(0, 1);
+        stdout.write(this.currentPrompt);
         //this.rl.prompt(true);
     }
 
-    static print(msg: string) : void {
+    static commandPrint(msg: string) {
+        stdout.clearLine(0);
+        stdout.cursorTo(0);
         stdout.write(msg);
+        //stdout.moveCursor(0, 1);
+        //console.log(this.currentPrompt)
+        stdout.write(this.currentPrompt);
+    }
+
+    static print(msg: string) : void {
+        //let currentLine = this.rl.line;
+        //stdout.moveCursor(5, 0);
+        stdout.write(msg);
+        //stdout.write(currentLine);
     }
 
     static async createPrompt(message: string) {
@@ -100,6 +112,7 @@ export default class DisplayDriver {
         let answer =  await new Promise<string>((resolve, reject) => {
             this.rl.question(message, (input) => {
                 this.currentPrompt = '';
+                //DisplayDriver.print('\n');
                 resolve(input);    
             });
         });
