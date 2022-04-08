@@ -80,5 +80,4 @@ export default class Core{
               break;
         };
     };
-  };
 };
