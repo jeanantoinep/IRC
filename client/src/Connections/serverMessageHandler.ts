@@ -89,7 +89,7 @@ export class ServerMessageHandler {
                 let len = 0;
                 let pwd = '';
                 while(len < 3) {
-                    let pwd = await DisplayDriver.createPrompt(`Password :`);
+                    pwd = await DisplayDriver.createPrompt(`Password :`);
                     console.log('entered password: ' + pwd)
                     len = pwd.length;
                 }
@@ -98,8 +98,15 @@ export class ServerMessageHandler {
                 return;
             }
 
-            this.clientHandler.sendAnonymousLoginRequest(this.clientHandler.getUsername());
+            answer = await DisplayDriver.createPrompt(`Are you satisfied with the username ${this.clientHandler.getUsername()} (yes/no): `);
 
+            if(answer.startsWith('y')) {
+                this.clientHandler.sendAnonymousLoginRequest(this.clientHandler.getUsername());
+                return;
+            }
+            else {
+                this.core.startLoginPhase();
+            }
         }
 
         if(returnData['result'] == 'wrong_pwd'){

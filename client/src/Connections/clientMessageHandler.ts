@@ -239,7 +239,7 @@ export class ClientMessageHandler {
         DisplayDriver.print('Register packet sent: ' + JSON.stringify(registerPacket) + '\n');
 
         this.username = username;
-        this.socket.emit('login', JSON.stringify(registerPacket));
+        this.socket.emit('register', JSON.stringify(registerPacket));
     }
 
     public sendAnonymousLoginRequest(username: string) {
