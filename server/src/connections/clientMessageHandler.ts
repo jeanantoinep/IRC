@@ -2,6 +2,7 @@ import { Server, Socket } from "socket.io";
 import { ClientToServerEvents, ServerToClientEvents } from "./socketEvents";
 import { DatabaseDriver } from "../databasedriver";
 import { ascii_art } from '../ascii';
+import { rickRoll } from "../rick";
 import { on } from "events";
 
 
@@ -29,6 +30,7 @@ export class ClientMessageHandler {
     init() {
         this.io.on("connection", (socket) => {
             socket.on("ascii", () => this.recvAscii(socket));
+            socket.on("rick", () => this.recvRick(socket));
             socket.on("anonymousLogin", (userData: string) => this.recvAnonymousLogin(userData, socket));
             socket.on("login", (userData: string) => this.recvLogin(userData, socket));
             socket.on("register", (userData: string) => this.recvRegister(userData, socket));
@@ -55,9 +57,9 @@ export class ClientMessageHandler {
             var receiverId = this.allSockets[dataParsed['receiver_name'].toLowerCase()];
             if (receiverId == undefined) {
                 this.io.to(socket.id).emit("pm", JSON.stringify(
-                    { 
+                    {
                         "result": "user_unknown",
-                        "username": dataParsed['receiver_name'].toLowerCase() 
+                        "username": dataParsed['receiver_name'].toLowerCase()
                     }))
                 console.log("SOCKET NOT FOUND");
             } else {
@@ -75,6 +77,10 @@ export class ClientMessageHandler {
 
     recvAscii(socket: Socket) {
         this.io.to(socket.id).emit("ascii", ascii_art);
+    };
+
+    recvRick(socket: Socket) {
+      this.io.to(socket.id).emit("rick", rickRoll);
     };
 
     async recvAnonymousLogin(data: string, socket: Socket) {

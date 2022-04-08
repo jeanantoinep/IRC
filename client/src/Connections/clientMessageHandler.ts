@@ -68,12 +68,12 @@ export class ClientMessageHandler {
             if(name == 'return' && this.inputData != ''){//End of line detection
                 this.printEol();
                 return;
-            } 
-               
+            }
+
             if(name == 'backspace' || name == 'delete') {//Character removal
                 this.printCharRemoval();
                 return;
-            } 
+            }
 
             this.printCharacter(char)
 
@@ -116,7 +116,7 @@ export class ClientMessageHandler {
 
     parseMessage(message: string) {
 
-        if(this.currentPhase != Phase.chat && 
+        if(this.currentPhase != Phase.chat &&
             this.currentPhase != Phase.roomList)
                 return;
 
@@ -251,6 +251,10 @@ export class ClientMessageHandler {
 
     public sendAsciiRequest() {
         this.socket.emit('ascii');
+    };
+
+    public sendRickRequest() {
+      this.socket.emit('rick');
     }
 
     public sendRoomsListRequest() {

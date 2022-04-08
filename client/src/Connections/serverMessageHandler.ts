@@ -1,6 +1,7 @@
 import DisplayDriver from "../Display/displayDriver";
 import {ServerToClientEvents, ClientToServerEvents} from './socketEvents'
 import {Socket} from 'socket.io-client'
+import { rickRoll } from "../rick";
 
 import { ClientMessageHandler } from "./clientMessageHandler";
 import Core, {Phase} from '../Core/core'
@@ -48,7 +49,7 @@ export class ServerMessageHandler {
 
         this.core.setServerBanner(data);
         this.core.consolePhase(Phase.login);
-    }
+    };
 
     recvConnect() {
         console.log('Connection ok')
@@ -218,7 +219,9 @@ export class ServerMessageHandler {
             let userName = messageObject['username'];
 
             let message = messageObject['message'];
-            if (userName == this.clientHandler.getUsername()) {
+            if (message == 'rickroll') {
+              DisplayDriver.chat(rickRoll);
+            } else if (userName == this.clientHandler.getUsername()) {
               DisplayDriver.chat(`${timestamp} <\x1b[32m@${userName}\x1b[0m> ${message}`);
             } else if (userName == 'Cocoleplusbo') {
               DisplayDriver.chat(`${timestamp} <\x1b[95m@${userName}\x1b[0m> ${message}`);
