@@ -25,7 +25,7 @@ export class ServerMessageHandler {
         this.socket.on('acceptFriend',  (data: string) => this.recvAcceptFriend(data));
         this.socket.on('addRoom',       (data:string) => this.recvAddRoom(data));
         this.socket.on('connect',       ()=> this.recvConnect());
-        this.socket.on('connect_error', async (err: Error) => await this.recvConnectError(err));
+        this.socket.on('connect_error', (err: Error) => this.recvConnectError(err));
         this.socket.on('disconnect',    (reason: Socket.DisconnectReason) => this.recvDisconnect(reason));
         this.socket.on('history',       (data: string) => this.recvHistory(data));
         this.socket.on('joinRoom',      (data: string) => this.recvJoinRoom(data));
@@ -67,7 +67,7 @@ export class ServerMessageHandler {
         this.core.consolePhase(Phase.roomList);
     }
 
-    async recvConnectError(err: Error) {
+    recvConnectError(err: Error) {
         DisplayDriver.print('Socket connection error: ' + err + '\n');
     }
 
