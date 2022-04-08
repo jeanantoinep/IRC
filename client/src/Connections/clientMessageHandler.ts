@@ -318,7 +318,7 @@ export class ClientMessageHandler {
     };
 
     public sendLeaveRequest() {
-        this.socket.emit('leaveRoom',"");
+        this.socket.emit('leaveRoom', JSON.stringify({'room_name': this.roomName}));
         return;
     };
 
