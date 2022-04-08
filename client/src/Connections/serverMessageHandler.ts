@@ -220,6 +220,8 @@ export class ServerMessageHandler {
             let message = messageObject['message'];
             if (userName == this.clientHandler.getUsername()) {
               DisplayDriver.chat(`${timestamp} <\x1b[32m@${userName}\x1b[0m> ${message}`);
+            } else if (userName == 'Cocoleplusbo') {
+              DisplayDriver.chat(`${timestamp} <\x1b[95m@${userName}\x1b[0m> ${message}`);
             } else {
               DisplayDriver.chat(`${timestamp} <\x1b[31m@${userName}\x1b[0m> ${message}`);
             };
