@@ -14,12 +14,12 @@ export class ClientMessageHandler {
         this.init();
     }
 
-    private getTimestamp() : string {
+    private getTimestamp(): string {
         let now = new Date();
         now.setTime(Date.now());
         return `${String(now.getHours()).padStart(2, '0')}:` +
-               `${String(now.getMinutes()).padStart(2, '0')}:` +
-               `${String(now.getSeconds()).padStart(2, '0')}`;
+            `${String(now.getMinutes()).padStart(2, '0')}:` +
+            `${String(now.getSeconds()).padStart(2, '0')}`;
 
     }
 
@@ -28,6 +28,7 @@ export class ClientMessageHandler {
             socket.on("ascii", () => this.recvAscii(socket));
             socket.on("anonymousLogin", (userData: string) => this.recvAnonymousLogin(userData, socket));
             socket.on("login", (userData: string) => this.recvLogin(userData, socket));
+            socket.on("register", (userData: string) => this.recvRegister(userData, socket));
             socket.on("listRoom", () => this.recvListRoom(socket));
             socket.on("addRoom", (roomName: string) => this.recvAddRoom(roomName, socket));
             socket.on("joinRoom", (roomName: string) => this.recvJoinRoom(roomName, socket));
@@ -36,6 +37,28 @@ export class ClientMessageHandler {
             socket.on("leaveRoom", (roomName: string) => this.recvLeaveRoom(roomName, socket));
             socket.on("pm", (data: string) => this.recvPm(data, socket));
         })
+    }
+
+    async recvRegister(userData: string, socket: Socket) {
+        console.log("register from client", socket.id);
+        var dataParsed = JSON.parse(userData);
+        var result = await this.dbDriver.getUserByUsername(dataParsed['username']);
+        if (result == "error") {
+            this.io.to(socket.id).emit("register", JSON.stringify({ "result": result }))
+        } else if (result != "[]") {
+            this.io.to(socket.id).emit("register", JSON.stringify({
+                "result": "username_exists", "username": dataParsed['username']
+            }))
+        } else {
+            var result2 = await this.dbDriver.addUser(userData);
+            if (result2 == "error") {
+                this.io.to(socket.id).emit("register", JSON.stringify({ "result": result }))
+            } else {
+                this.io.to(socket.id).emit("register", JSON.stringify({
+                    "result": "ok", "username": dataParsed['username']
+                }));
+            }
+        }
     }
 
     async recvPm(data: string, socket: Socket) {
@@ -49,25 +72,6 @@ export class ClientMessageHandler {
         } else {
             this.io.to(dataParsed['receiver_name']).emit("pm", JSON.stringify(
                 { "sender_name": socket.data['username'], "message": dataParsed["message"] }));
-        }
-    }
-
-    async recvMsg(data: string, socket: Socket) { // ADD TIMESTAMP
-        console.log("msg from client", socket.data['username']);
-        var result = await this.dbDriver.addMsg(data, socket.data['username']);
-        console.log(result);
-        var dataParsed = JSON.parse(data);
-        if (result == "error") {
-            this.io.to(socket.id).emit("msg", JSON.stringify({"result":result}));
-        } else {
-            this.io.to(dataParsed['room_name']).emit("msg", JSON.stringify(
-                { 
-                    "username": socket.data['username'], 
-                    "type":"message", 
-                    "message": dataParsed["message"],
-                    "timestamp": this.getTimestamp()
-                }
-            ));
         }
     }
 
@@ -159,6 +163,25 @@ export class ClientMessageHandler {
         this.io.to(socket.id).emit("listUser", JSON.stringify({ "usernames": usernames }));
     }
 
+    async recvMsg(data: string, socket: Socket) { // ADD TIMESTAMP
+        console.log("msg from client", socket.data['username']);
+        var result = await this.dbDriver.addMsg(data, socket.data['username']);
+        console.log(result);
+        var dataParsed = JSON.parse(data);
+        if (result == "error") {
+            this.io.to(socket.id).emit("msg", JSON.stringify({ "result": result }));
+        } else {
+            this.io.to(dataParsed['room_name']).emit("msg", JSON.stringify(
+                {
+                    "username": socket.data['username'],
+                    "type": "message",
+                    "message": dataParsed["message"],
+                    "timestamp": this.getTimestamp()
+                }
+            ));
+        }
+    }
+
     recvLeaveRoom(roomName: string, socket: Socket) {
         console.log("leaveRoom from client", socket.data['username']);
         try {
@@ -170,7 +193,7 @@ export class ClientMessageHandler {
         }
     }
 
-    recvAcceptFriend(friendName: string){
+    recvAcceptFriend(friendName: string) {
         console.log("acceptFriend from client");
         let result = this.dbDriver.acceptFriend(friendName);
         // console.log(result)
