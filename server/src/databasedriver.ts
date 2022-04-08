@@ -97,19 +97,32 @@ export class DatabaseDriver {
         var dataParsed = JSON.parse(data);
         console.log(dataParsed);
         var sender = await this.getUserByUsername(senderName);
-        var room = await this.getRoomByName(dataParsed['room_name']);
+        var idSender: string = "";
         var regex = /'/gi;
-        // remplacer les ' par des \'
-        var message: string = dataParsed['message'].replace(regex, "\\\'"); 
-        if (sender == undefined || room == undefined)
+        var message: string = "";
+        if (sender == "[]") {
+            idSender = '1';
+            message = dataParsed['timestamp'] + " " + senderName + " " + dataParsed['message'].replace(regex, "\\\'");
+            console.log("message=", message);
+        } else {
+            idSender = JSON.parse(sender)[0]['id'];
+            message = dataParsed['message'].replace(regex, "\\\'"); // remplacer les ' par des \'
+        }
+        console.log(idSender);
+        var room = await this.getRoomByName(dataParsed['room_name']);
+        
+        if (sender == undefined || room == undefined) {
+            console.log("ERROR");
             return 'error'
+        }
         return this.query("INSERT INTO `message` (user_id,room_id,message) \
-                            VALUES (" + JSON.parse(sender)[0]['id'] + "," + JSON.parse(room)[0]['id'] + ",\
+                            VALUES (" + idSender + "," + JSON.parse(room)[0]['id'] + ",\
                             '" + message + "')")
             .then((result: any) => {
                 return result['insertId'] as number
             })
             .catch((error: string) => {
+                console.log(error);
                 return 'error'
             });
     }

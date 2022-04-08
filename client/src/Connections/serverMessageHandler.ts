@@ -1,9 +1,9 @@
 import DisplayDriver from "../Display/displayDriver";
-import {ServerToClientEvents, ClientToServerEvents} from './socketEvents'
-import {Socket} from 'socket.io-client'
+import { ServerToClientEvents, ClientToServerEvents } from './socketEvents'
+import { Socket } from 'socket.io-client'
 
 import { ClientMessageHandler } from "./clientMessageHandler";
-import Core, {Phase} from '../Core/core'
+import Core, { Phase } from '../Core/core'
 
 export class ServerMessageHandler {
     private socket: Socket<ServerToClientEvents, ClientToServerEvents>;
@@ -11,8 +11,8 @@ export class ServerMessageHandler {
     private core: Core;
 
     constructor(socket: Socket<ServerToClientEvents, ClientToServerEvents>,
-                clientHandler: ClientMessageHandler,
-                core: Core) {
+        clientHandler: ClientMessageHandler,
+        core: Core) {
         this.socket = socket;
         this.clientHandler = clientHandler;
         this.core = core;
@@ -51,7 +51,7 @@ export class ServerMessageHandler {
 
     recvPrivateMessage(data: string) {
         let returnData = JSON.parse(data);
-        if(returnData['result'] == 'user_unknown') {
+        if (returnData['result'] == 'user_unknown') {
             DisplayDriver.print(`Unknown user: ${returnData['username']} !\n`)
             return;
         }
@@ -59,7 +59,7 @@ export class ServerMessageHandler {
 
     recvRegister(data: string) {
         let returnData = JSON.parse(data);
-        if(returnData['result'] == 'username_exists') {
+        if (returnData['result'] == 'username_exists') {
             DisplayDriver.print(`Username ${returnData['username']} already exists !\n`)
             return;
         }
@@ -77,10 +77,10 @@ export class ServerMessageHandler {
 
     async recvLogin(data: string) {
         let returnData = JSON.parse(data);
-        if(returnData['result'] == 'need_pwd') {
+        if (returnData['result'] == 'need_pwd') {
             let len = 0;
             let passwd = '';
-            while(len < 1) {
+            while (len < 1) {
                 passwd = await DisplayDriver.createPrompt(`Password: `);
                 len = passwd.length;
             }
@@ -88,20 +88,20 @@ export class ServerMessageHandler {
             return;
         }
 
-        if(returnData['result'] == 'need_auth') {
+        if (returnData['result'] == 'need_auth') {
             let answer = await DisplayDriver.createPrompt(`Username isn't registered: do you want to claim it ? (yes/no): `);
             let loop = true;
             let repeat = false;
 
-            while(loop) {
+            while (loop) {
                 if (repeat) {
-                  DisplayDriver.clearTerminal();
-                  answer = await DisplayDriver.createPrompt(`Please answer yes or no:`);
+                    DisplayDriver.clearTerminal();
+                    answer = await DisplayDriver.createPrompt(`Please answer yes or no:`);
                 };
                 if (answer === 'yes' || answer === 'y') {
                     let len = 0;
                     let pwd = '';
-                    while(len < 3) {
+                    while (len < 3) {
                         DisplayDriver.clearTerminal();
                         pwd = await DisplayDriver.createPrompt(`Please enter a password with at least 3 characters: `);
                         console.log('entered password: ' + pwd)
@@ -113,7 +113,7 @@ export class ServerMessageHandler {
                     return;
                 } else if (answer === 'no' || answer === 'n') {
                     answer = await DisplayDriver.createPrompt(`Are you satisfied with the username ${this.clientHandler.getUsername()} (yes/no): `);
-                    if(answer.startsWith('y')) {
+                    if (answer.startsWith('y')) {
                         this.clientHandler.sendAnonymousLoginRequest(this.clientHandler.getUsername());
                         return;
                     } else {
@@ -126,23 +126,23 @@ export class ServerMessageHandler {
             };
         };
 
-        if(returnData['result'] == 'wrong_pwd'){
+        if (returnData['result'] == 'wrong_pwd') {
             DisplayDriver.print('Invalid password !\n');
             this.core.startLoginPhase();
         };
 
-        if(returnData['result'] == 'ok') {
+        if (returnData['result'] == 'ok') {
             this.core.consolePhase(Phase.roomList);
         };
     };
 
     async recvAnonymousLogin(data: string) {
         let returnData = JSON.parse(data);
-        if(returnData['result'] == 'ok') {
+        if (returnData['result'] == 'ok') {
             this.core.consolePhase(Phase.roomList);
         };
 
-        if(returnData['result'] == 'login_exists') {
+        if (returnData['result'] == 'login_exists') {
             DisplayDriver.print('Username is already in use ! Please pick another one\n')
             let answer = await DisplayDriver.createPrompt(`Username: `);
 
@@ -153,7 +153,7 @@ export class ServerMessageHandler {
 
     };
 
-    recvAcceptFriend(data:string){
+    recvAcceptFriend(data: string) {
 
     };
 
@@ -175,13 +175,13 @@ export class ServerMessageHandler {
         console.log(data)
         let returnData = JSON.parse(data);
 
-        if(returnData['result'] == 'ok') {
+        if (returnData['result'] == 'ok') {
             this.core.consolePhase(Phase.chat);
             this.clientHandler.setRoomName(returnData['room_name']);
             return;
         };
 
-        if(returnData['result'] == 'room_unknown')
+        if (returnData['result'] == 'room_unknown')
             DisplayDriver.print(`Room ${returnData['room_name']} doesn't exist!\n`);
     };
 
@@ -196,7 +196,7 @@ export class ServerMessageHandler {
         let roomsArray = JSON.parse(data);
 
         let rows = 0;
-        roomsArray.forEach((room:any) => {
+        roomsArray.forEach((room: any) => {
             DisplayDriver.print(room['name'] + '\n');
             rows++;
         });
@@ -213,18 +213,25 @@ export class ServerMessageHandler {
         let messageObject = JSON.parse(messageData);
         let messageType = messageObject['type'];
 
-        if(messageType == 'message') {
+        if (messageType == 'message') {
             let timestamp = messageObject['timestamp'];
             let userName = messageObject['username'];
             let message = messageObject['message'];
             if (userName == this.clientHandler.getUsername()) {
-              DisplayDriver.chat(`${timestamp} <\x1b[32m@${userName}\x1b[0m> ${message}`);
-            } 
-            else {
-              DisplayDriver.chat(`${timestamp} <\x1b[31m@${userName}\x1b[0m> ${message}`);
+                DisplayDriver.chat(`${timestamp} <\x1b[32m@${userName}\x1b[0m> ${message}`);
+            } else if (userName == 'Cocoleplusbo') {
+                DisplayDriver.chat(`${timestamp} <\x1b[95m@${userName}\x1b[0m> ${message}`);
+            } else {
+                DisplayDriver.chat(`${timestamp} <\x1b[31m@${userName}\x1b[0m> ${message}`);
             };
-        } 
-        else if (messageType == 'join') {
+        } else if (messageType == 'pm') {
+            let formatedMessage = DisplayDriver.formatPrivateMessage(
+                messageObject['timestamp'],
+                messageObject['username'],
+                messageObject['message']);
+            DisplayDriver.chat(formatedMessage);
+
+        } else if (messageType == 'join') {
             let timestamp = messageObject['timestamp'];
             let userName = messageObject['username'];
             DisplayDriver.chat(`${timestamp} <@${userName}> entered the chat !`);
