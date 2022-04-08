@@ -101,7 +101,6 @@ export class DatabaseDriver {
         var regex = /'/gi;
         // remplacer les ' par des \'
         var message: string = dataParsed['message'].replace(regex, "\\\'"); 
-        console.log(message);
         if (sender == undefined || room == undefined)
             return 'error'
         return this.query("INSERT INTO `message` (user_id,room_id,message) \
