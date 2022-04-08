@@ -208,9 +208,9 @@ export class ServerMessageHandler {
         if(messageType == 'message') {
             let timestamp = messageObject['timestamp'];
             let userName = messageObject['username'];
-            userName.style.color="#FF0000";
+
             let message = messageObject['message'];
-            DisplayDriver.chat(`${timestamp} <@${userName}> ${message}`);
+            DisplayDriver.chat(`${timestamp} <\x1b[32m@${userName}\x1b[0m> ${message}`);
         }
         else if (messageType == 'join') {
             let timestamp = messageObject['timestamp'];
