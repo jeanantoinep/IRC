@@ -70,8 +70,10 @@ export class ClientMessageHandler {
                 return;
             } 
                
-            if(name == 'backspace' || name == 'delete') //Character removal
+            if(name == 'backspace' || name == 'delete') {//Character removal
                 this.printCharRemoval();
+                return;
+            } 
 
             this.printCharacter(char)
 
