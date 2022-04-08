@@ -9,16 +9,24 @@ export default class DisplayDriver {
 
     static shouldPrompt: boolean = false;
 
+    static currentPrompt: string = '';
+
     static getDriver() {
         return this.rl;
     }
 
+    static getCurrentPrompt() {
+        return this.currentPrompt;
+    }
+
+    static setCurrentPrompt(prompt:string) {
+        this.currentPrompt = prompt;
+    }
     
     static createReadlineInterface() : readline.Interface {
         let rl = readline.createInterface({
             input: stdin,
             //output: stdout,
-            prompt: '> ',
             terminal: true,
         });
 
@@ -76,10 +84,8 @@ export default class DisplayDriver {
     static chat(msg: string) {
         stdout.clearLine(0);
         stdout.cursorTo(0);
-        stdout.moveCursor(0, -1);
-
+        //stdout.moveCursor(0, -1);
         stdout.write(msg + '\n');
-        stdout.write('\n');
         //stdout.moveCursor(0, 1);
         //this.rl.prompt(true);
     }
@@ -90,8 +96,10 @@ export default class DisplayDriver {
 
     static async createPrompt(message: string) {
         DisplayDriver.print(message);
+        this.currentPrompt = message;
         let answer =  await new Promise<string>((resolve, reject) => {
             this.rl.question(message, (input) => {
+                this.currentPrompt = '';
                 resolve(input);    
             });
         });

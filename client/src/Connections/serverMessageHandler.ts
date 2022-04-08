@@ -167,9 +167,8 @@ export class ServerMessageHandler {
         });
 
         DisplayDriver.scrollDown(rows + this.core.getServerBannerSize());
-        //DisplayDriver.print('\n')
-        if(!DisplayDriver.shouldPrompt)
-            DisplayDriver.resumeInput();
+        DisplayDriver.print(DisplayDriver.getCurrentPrompt());
+
     }
 
     recvListUsers(data: string) {

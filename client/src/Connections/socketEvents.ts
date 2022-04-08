@@ -2,7 +2,7 @@ export interface ServerToClientEvents {
     //Authentification
     login: (data: string) => void;
     anonymousLogin: (data: string) => void;
-    registration: (data: string) => void;
+    register: (data: string) => void;
 
     //Rooms
     listRoom: (data: string) => void;

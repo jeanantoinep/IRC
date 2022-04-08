@@ -36,31 +36,10 @@ export class ClientMessageHandler {
             process.exit(1);
         });
 
-        stdin.on('data', (data: string) => {
-
-            
-            //console.log(data);
-            //See: https://www.fileformat.info/info/charset/UTF-8/list.htm
-
-
-            //if(data == '\u0008') { //Backspace
-            //   process.stdout.write('\033c')
-            //    process.stdout.moveCursor(-1, 0);
-            //}
-
-            //if(this.currentPhase != Phase.chat)
-                //DisplayDriver.getDriver().write(data);
-
-
-
-        });
-
         // stdin.on('keypress', (...input) => {
         stdin.on('keypress', (...data:any) => {
-            //console.log(data);
             let char: string = data[0];
             let sequence: string = data[1].sequence;
-
 
             // if(this.currentPhase != Phase.chat &&
             //     this.currentPhase != Phase.roomList)
@@ -70,7 +49,7 @@ export class ClientMessageHandler {
                 this.inputData = DisplayDriver.getDriver().line;
                 stdout.clearLine(0);
                 stdout.cursorTo(0);
-                stdout.write('> ');
+                stdout.write(DisplayDriver.getCurrentPrompt());
                 stdout.write(this.inputData);
                 //stdout.moveCursor(1, 0);
                 return;
@@ -236,6 +215,13 @@ export class ClientMessageHandler {
         };
     }
 
+    async startLoginProcess() {
+        let validInput = false;
+        let login = '';
+        login = await DisplayDriver.createPrompt('Username: ');
+        this.sendLoginRequest(login);
+    }
+
     parseCommand(command: string) {
         DisplayDriver.print(`Invalid command ${command} \n`);
     };
@@ -246,6 +232,14 @@ export class ClientMessageHandler {
 
         this.username = username;
         this.socket.emit('login', JSON.stringify(loginPacket));
+    }
+
+    public sendRegisterRequest(username: string, password: string) {
+        let registerPacket = {"username": username, "password": password};
+        DisplayDriver.print('Register packet sent: ' + JSON.stringify(registerPacket) + '\n');
+
+        this.username = username;
+        this.socket.emit('login', JSON.stringify(registerPacket));
     }
 
     public sendAnonymousLoginRequest(username: string) {
