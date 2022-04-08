@@ -54,7 +54,12 @@ export class ServerMessageHandler {
     }
 
     recvRegister(data: string) {
+        let returnData = JSON.parse(data);
+        console.log('Login packet received: '+ data);
 
+        if(returnData['result'] == 'username_exists') {
+            return;
+        }
     }
 
     async recvConnectError(err: Error) {
