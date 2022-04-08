@@ -166,7 +166,6 @@ export class ClientMessageHandler {
     async recvMsg(data: string, socket: Socket) { // ADD TIMESTAMP
         console.log("msg from client", socket.data['username']);
         var result = await this.dbDriver.addMsg(data, socket.data['username']);
-        console.log(result);
         var dataParsed = JSON.parse(data);
         if (result == "error") {
             this.io.to(socket.id).emit("msg", JSON.stringify({ "result": result }));
