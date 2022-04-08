@@ -55,17 +55,18 @@ export class ServerMessageHandler {
 
     recvRegister(data: string) {
         let returnData = JSON.parse(data);
-        console.log('Login packet received: '+ data);
+        console.log('Register packet received: '+ data);
 
         if(returnData['result'] == 'username_exists') {
+            DisplayDriver.print(`Username ${returnData['username']} already exists !`)
             return;
         }
+
+        this.core.consolePhase(Phase.roomList);
     }
 
     async recvConnectError(err: Error) {
-        DisplayDriver.print('Socket connection error: ' + err);
-        DisplayDriver.print('\n');
-
+        DisplayDriver.print('Socket connection error: ' + err + '\n');
     }
 
     recvDisconnect(reason: Socket.DisconnectReason) {

@@ -40,12 +40,13 @@ export class ClientMessageHandler {
         stdin.on('keypress', (...data:any) => {
             let char: string = data[0];
             let sequence: string = data[1].sequence;
-            
+            let name = data[1].name;
+
             // if(this.currentPhase != Phase.chat &&
             //     this.currentPhase != Phase.roomList)
             //      return;
 
-            if(sequence == '\b' || sequence == '\x1B[3~') {
+            if(name == 'backspace' || name == 'delete') {
                 this.inputData = DisplayDriver.getDriver().line;
                 stdout.clearLine(0);
                 stdout.cursorTo(0);
@@ -55,13 +56,13 @@ export class ClientMessageHandler {
                 return;
             }
 
-            if(sequence == '\r' && this.inputData != '') { //End of line detection
+            if(name == 'return' && this.inputData != '') { //End of line detection
                 //console.log('EOL Detected, line: ' + this.inputData)
                 this.parseMessage(this.inputData);
                 this.inputData = '';
                 stdout.cursorTo(0);
                 stdout.write('> ');
-                stdout.clearLine(1);
+                //stdout.clearLine(1);
                 return;
             }
 
