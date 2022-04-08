@@ -32,7 +32,8 @@ export class ServerMessageHandler {
         this.socket.on('leaveRoom', (data: string) => this.recvLeaveRoom(data));
         this.socket.on('listRoom', (data: string) => this.recvListRoom(data));
         this.socket.on('listUser', (data: string) => this.recvListUsers(data));
-        this.socket.on('login', (data: string) => this.recvLogin(data))
+        this.socket.on('login', (data: string) => this.recvLogin(data));
+        this.socket.on('anonymousLogin', (data: string) => this.recvAnonymousLogin(data))
         this.socket.on('register', (data: string) => this.recvRegister(data));
         this.socket.on('msg', (data:string) => this.recvMessage(data));
         this.socket.on('ascii', (data: string) => this.recvAsciiBanner(data));
@@ -218,7 +219,8 @@ export class ServerMessageHandler {
             let formatedMessage = DisplayDriver.formatChatMessage(
                 messageObject['timestamp'],
                 messageObject['username'],
-                messageObject['message']);
+                messageObject['message'],
+                (messageObject['user_type'] = "guest" ? true: false));
             DisplayDriver.chat(formatedMessage);
         }
         else if(messageType == 'pm') {
