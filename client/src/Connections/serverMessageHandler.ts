@@ -190,7 +190,6 @@ export class ServerMessageHandler {
     recvLeaveRoom(data: string) {
         DisplayDriver.leaveChat();
         this.core.consolePhase(Phase.roomList);
-        //DisplayDriver.pauseInput();
     };
 
     recvListRoom(data: string) {
@@ -245,32 +244,40 @@ export class ServerMessageHandler {
             let timestamp = messageObject['timestamp'];
             let userName = messageObject['username'];
             let message = messageObject['message'];
+            let guest =  (messageObject['user_type'] == 'guest');
+
             if (message == 'rickroll') {
               DisplayDriver.chat(rickRoll);
-            } else if (userName == this.clientHandler.getUsername()) {
-              DisplayDriver.chat(`${timestamp} <\x1b[32m@${userName}\x1b[0m> ${message}`);
-            } else if (userName == 'Cocoleplusbo') {
-                DisplayDriver.chat(`${timestamp} <\x1b[95m@${userName}\x1b[0m> ${message}`);
-            } else {
-                DisplayDriver.chat(`${timestamp} <\x1b[31m@${userName}\x1b[0m> ${message}`);
+            } 
+            else if (userName == this.clientHandler.getUsername()) {
+                let formated = DisplayDriver.formatChatMessage(timestamp, userName, message, guest, true);
+                DisplayDriver.chat(formated);
+            } 
+            else {
+                let formated = DisplayDriver.formatChatMessage(timestamp, userName, message, guest, false);
+                DisplayDriver.chat(formated);
             };
-        } else if (messageType == 'pm') {
+        } 
+        else if (messageType == 'pm') {
             let formatedMessage = DisplayDriver.formatPrivateMessage(
                 messageObject['timestamp'],
                 messageObject['username'],
                 messageObject['message']);
             DisplayDriver.chat(formatedMessage);
 
-        } else if (messageType == 'join') {
+        }
+        else if (messageType == 'join') {
             let timestamp = messageObject['timestamp'];
             let userName = messageObject['username'];
-            DisplayDriver.chat(`${timestamp} <@${userName}> entered the chat !`);
+            let formated = DisplayDriver.formatInfoJoin(timestamp, userName);
+            DisplayDriver.chat(formated);
         }
         else if (messageType == 'leave') {
             let timestamp = messageObject['timestamp'];
             let reason = messageObject['reason'];
             let userName = messageObject['username'];
-            DisplayDriver.chat(`${timestamp} <@${userName}> left the chat (${reason}) !`);
+            let formated = DisplayDriver.formatInfoLeave(timestamp, userName, reason);
+            DisplayDriver.chat(formated);
         };
     };
 };

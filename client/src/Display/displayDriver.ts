@@ -114,17 +114,13 @@ export default class DisplayDriver {
     static chat(msg: string) {
         stdout.clearLine(0);
         stdout.cursorTo(0);
-        //stdout.moveCursor(0, -1);
         stdout.write(msg + '\n');
-        //this.rl.prompt(true);
     }
 
     static commandPrint(msg: string) {
         stdout.clearLine(0);
         stdout.cursorTo(0);
         stdout.write(msg);
-        //stdout.moveCursor(0, 1);
-        //console.log(this.currentPrompt)
         this.rl.line = this.currentPrompt;
     }
 
@@ -153,20 +149,47 @@ export default class DisplayDriver {
         readline.clearScreenDown(stdout);
     }
 
-    static formatChatMessage(timestamp: string, username: string, message: string, guest: boolean = false): string {
+    static moveCursor(dx: number, dy: number = 0) {
+        readline.moveCursor(stdout, dx, dy);
+    }
 
-        return(`${timestamp} ${('<@'+username+'>').padStart(15, ' ')} ${message}`);
+    static getCursorPos() {
+        //return this.rl.getCursorPos();
+        return this.rl.cursor
+    }
+
+    static formatChatMessage(timestamp: string, 
+                             username: string, 
+                             message: string, 
+                             guest: boolean = false,
+                             self = false): string {
+
+        let line = timestamp + ' ';
+        if(self) line += ('<\x1b[31m@' + username + '\x1b[0m>').padStart(15, ' ');
+        else line += ('<\x1b[32m@' + username + '\x1b[0m>').padStart(15, ' ');
+        line += message;
+        return line;
     }
 
     static formatPrivateMessage(timestamp: string, username: string, message: string): string {
-        return(`${timestamp} ${('<@'+username+'>').padStart(15, ' ')} ${message}`);
+        let line = timestamp + ' ';
+        line += ('<#' + username + '>').padStart(15, ' ');
+        line += message;
+        return line;
     }
 
     static formatInfoJoin(timestamp: string, username: string): string {
-        return(`${timestamp} <@${username}> entered the chat !`);
+        let line = timestamp + ' ';
+        line += ''.padStart(15, '-');
+        line += username + 'entered the chat !'
+        return line;
     }
 
     static formatInfoLeave(timestamp: string, username: string, reason: string): string {
-        return(`${timestamp} <@${username}> left the chat (${reason}) !`);
+        let line = timestamp + ' ';
+        line += ''.padStart(15, ' ');
+        line += username + 'entered the chat !'
+        line += '(' + reason + ')';
+        return line
     }
 }

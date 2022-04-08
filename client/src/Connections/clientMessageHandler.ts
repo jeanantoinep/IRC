@@ -1,18 +1,19 @@
 import { stdout, stdin } from 'process';
 
 import DisplayDriver from "../Display/displayDriver";
-import {ServerToClientEvents, ClientToServerEvents} from './socketEvents';
-import {Socket} from 'socket.io-client';
+import { ServerToClientEvents, ClientToServerEvents } from './socketEvents';
+import { Socket } from 'socket.io-client';
 
 import { Phase } from "../Core/core";
+import { hasOnlyExpressionInitializer } from 'typescript';
 
 export class ClientMessageHandler {
     private socket: Socket<ServerToClientEvents, ClientToServerEvents>;
 
-    private phaseCommandHandler: (command:string) => void;
+    private phaseCommandHandler: (command: string) => void;
 
     //Phase data
-    private currentPhase:Phase = Phase.load;
+    private currentPhase: Phase = Phase.load;
     //Client data
     private username: string = '';
     private roomName: string = '';
@@ -28,7 +29,7 @@ export class ClientMessageHandler {
     };
 
     private printCharacter(input: string) {
-        if(input != undefined) {
+        if (input != undefined) {
             this.inputData += input;
             stdout.write(input);
         }
@@ -45,34 +46,57 @@ export class ClientMessageHandler {
         //stdout.moveCursor(0, -1);
     }
 
-    private printCharRemoval() {
+    private printCharRemoval(direction: number) {
         this.inputData = DisplayDriver.getDriver().line;
         stdout.cursorTo(0);
         stdout.write(DisplayDriver.getCurrentPrompt());
         stdout.write(this.inputData);
         stdout.clearLine(1);
-        //stdout.moveCursor(1, 0);
+        //stdout.moveCursor(direction, 0);
     }
 
     private initInputHandlers() {
         stdin.on('SIGTERM', (data: Buffer) => {
-            process.exit(1);
+            process.exit(0);
         });
 
         // stdin.on('keypress', (...input) => {
-        stdin.on('keypress', (...data:any) => {
+        stdin.on('keypress', (...data: any) => {
             let char: string = data[0];
             let sequence: string = data[1].sequence;
             let name = data[1].name;
+            //console.log(data)
+            
+            if(name == 'c' && data[1].ctrl == true)
+                process.exit(0);
 
-            if(name == 'return' && this.inputData != ''){//End of line detection
+            if (name == 'return' && this.inputData != '') {//End of line detection
                 this.printEol();
                 return;
             }
 
+            // if(name == 'right') {
+            //     if(DisplayDriver.getCursorPos() <= this.inputData.length) {
+            //         DisplayDriver.moveCursor(1, 0);
+            //         console.log('Pos: ' + DisplayDriver.getCursorPos()+' , length: ' + this.inputData.length)
+            //         //stdout.moveCursor(1, 0);
+            //     }
+            //         return;
+            // }
+            
+            // if(name == 'left') {
+            //      //console.log(DisplayDriver.getCursorPos().cols)
+            //     if(DisplayDriver.getCursorPos() > 0) {
+            //         DisplayDriver.moveCursor(-1, 0);
+            //         //stdout.moveCursor(-1, 0);
+            //     }
+            //     return;
+            //     //console.log(DisplayDriver.getCursorPos())
+            // }
+
             if(name == 'backspace' || name == 'delete') {//Character removal
-                this.printCharRemoval();
-                return;
+                let direction = (name = 'backspace' ? -1 : 1);
+                this.printCharRemoval(direction);
             }
 
             this.printCharacter(char)
@@ -97,7 +121,7 @@ export class ClientMessageHandler {
     }
 
     public setPhase(phase: Phase) {
-        switch(phase){
+        switch (phase) {
             case Phase.roomList:
                 this.phaseCommandHandler = this.roomListCommandHandler;
                 this.currentPhase = Phase.roomList;
@@ -116,14 +140,14 @@ export class ClientMessageHandler {
 
     parseMessage(message: string) {
 
-        if(this.currentPhase != Phase.chat &&
+        if (this.currentPhase != Phase.chat &&
             this.currentPhase != Phase.roomList)
-                return;
+            return;
 
-        if(message.startsWith('/'))
+        if (message.startsWith('/'))
             return this.phaseCommandHandler(message);
 
-        else if(this.currentPhase == Phase.chat) {
+        else if (this.currentPhase == Phase.chat) {
             this.sendMessage(message);
             DisplayDriver.resumeInput();
         }
@@ -136,28 +160,24 @@ export class ClientMessageHandler {
     roomListCommandHandler(command: string) {
         let commandArgs = command.split(' ', 2);
 
-        switch(commandArgs[0].toLowerCase()) {
+        switch (commandArgs[0].toLowerCase()) {
             case '/rooms':
                 this.sendRoomsListRequest();
                 break;
 
-            case '/join' :
-                if(this.checkArgc(commandArgs, 2))
+            case '/join':
+                if (this.checkArgc(commandArgs, 2))
                     this.sendJoinRequest(commandArgs[1])
                 break;
 
             case '/create':
-                if(this.checkArgc(commandArgs, 2))
+                if (this.checkArgc(commandArgs, 2))
                     this.sendCreateRoomRequest(commandArgs[1]);
                 this.sendCreateRoomRequest();
                 break;
 
             case '/help':
                 this.showRoomListCommands();
-                break;
-
-            case '/refresh':
-                this.sendRoomsListRequest();
                 break;
 
             default:
@@ -169,21 +189,21 @@ export class ClientMessageHandler {
 
     showRoomListCommands() {
         DisplayDriver.commandPrint('Available options:\n'
-                            + '\t\t/join {room name} => Joins an existing room\n'
-                            + '\t\t/create {room name} => Creates a new room\n')
+            + '\t\t/join {room name} => Joins an existing room\n'
+            + '\t\t/create {room name} => Creates a new room\n')
     }
 
     chatRoomCommandHandler(command: string) {
         let commandArgs = command.split(' ', 2);
 
-        switch(commandArgs[0]) {
-            case '/join' :
-                if(this.checkArgc(commandArgs, 2))
+        switch (commandArgs[0]) {
+            case '/join':
+                if (this.checkArgc(commandArgs, 2))
                     this.sendJoinRequest(commandArgs[1])
                 break;
 
             case '/history':
-                if(this.checkArgc(commandArgs, 2))
+                if (this.checkArgc(commandArgs, 2))
                     this.sendHistoryRequest(Number(commandArgs[1]));
                 this.sendHistoryRequest();
                 break;
@@ -197,14 +217,14 @@ export class ClientMessageHandler {
                 break;
 
             case '/add':
-                if(this.checkArgc(commandArgs, 2))
+                if (this.checkArgc(commandArgs, 2))
                     this.sendAddFriendRequest(commandArgs[1]);
                 this.sendAddFriendRequest();
                 break;
 
             case '/accept':
-              //if(this.checkArgc())
-              break;
+                //if(this.checkArgc())
+                break;
 
             case '/pm':
                 commandArgs = command.split(' ', 2);
@@ -222,7 +242,7 @@ export class ClientMessageHandler {
 
     async startLoginProcess() {
         let login = await DisplayDriver.createPrompt('Username: ');
-        if(login.length == 0) {
+        if (login.length == 0) {
             this.startLoginProcess()
             return;
         }
@@ -234,20 +254,20 @@ export class ClientMessageHandler {
     };
 
     public sendLoginRequest(username: string, password: string = '') {
-        let loginPacket = {"username": username, "password": password};
+        let loginPacket = { "username": username, "password": password };
         this.username = username;
         this.socket.emit('login', JSON.stringify(loginPacket));
     }
 
     public sendRegisterRequest(username: string, password: string) {
-        let registerPacket = {"username": username, "password": password};
+        let registerPacket = { "username": username, "password": password };
 
         this.username = username;
         this.socket.emit('register', JSON.stringify(registerPacket));
     }
 
     public sendAnonymousLoginRequest(username: string) {
-        let loginPacket = {"username": username};
+        let loginPacket = { "username": username };
         this.username = username;
 
         this.socket.emit('anonymousLogin', JSON.stringify(loginPacket));
@@ -255,10 +275,6 @@ export class ClientMessageHandler {
 
     public sendAsciiRequest() {
         this.socket.emit('ascii');
-    };
-
-    public sendRickRequest() {
-      this.socket.emit('rick');
     }
 
     public sendRoomsListRequest() {
@@ -272,7 +288,7 @@ export class ClientMessageHandler {
 
     public sendJoinRequest(roomName: string = '') {
         console.log('room name: ' + roomName)
-        if(roomName.length == 0) {
+        if (roomName.length == 0) {
             DisplayDriver.print('Invalid command /join \n');
             DisplayDriver.print('Usage: /join {room_name}\n');
             return;
@@ -283,27 +299,31 @@ export class ClientMessageHandler {
     };
 
     public sendHistoryRequest(messageCount: number = 0) {
-        if(messageCount == NaN) {
+        if (messageCount == NaN) {
             DisplayDriver.print('Invalid command /history \n');
             DisplayDriver.print('Usage: /history {message_count}');
             return;
         };
 
-        if(messageCount == 0) {
+        if (messageCount == 0) {
             messageCount = 20;
         };
 
-        this.socket.emit('history', messageCount);
+        var data = {
+            "room_name": this.roomName,
+            "message_count": messageCount
+        };
+        this.socket.emit('history', JSON.stringify(data));
         return;
     };
 
     public sendLeaveRequest() {
-        this.socket.emit('leaveRoom');
+        this.socket.emit('leaveRoom', JSON.stringify({'room_name': this.roomName}));
         return;
     };
 
     public sendCreateRoomRequest(roomName: string = '') {
-        if(roomName == '') {
+        if (roomName == '') {
             DisplayDriver.print('Invalid command /create \n');
             DisplayDriver.print('Usage: /create {room_name}\n');
             return;
@@ -319,7 +339,7 @@ export class ClientMessageHandler {
     };
 
     public sendPrivateMessageRequest(userName: string = '', message: string = '') {
-        if(userName == '' || message == '') {
+        if (userName == '' || message == '') {
             DisplayDriver.print('Invalid command /pm \n');
             DisplayDriver.print('Usage: /pm {user_name} {message}\n');
             return;
@@ -335,7 +355,7 @@ export class ClientMessageHandler {
     };
 
     public sendAddFriendRequest(userName: string = '') {
-        if(userName == '') {
+        if (userName == '') {
             DisplayDriver.print('Invalid command /add \n');
             DisplayDriver.print('Usage: /add {user_name}\n');
             return;
@@ -346,7 +366,7 @@ export class ClientMessageHandler {
     };
 
     public sendMessage(message: string) {
-        this.socket.emit('msg', JSON.stringify({"room_name":this.roomName,"message":message}));
+        this.socket.emit('msg', JSON.stringify({ "room_name": this.roomName, "message": message }));
         return;
     };
 
