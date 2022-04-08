@@ -24,12 +24,35 @@ export class ClientMessageHandler {
         this.socket = socket;
         this.phaseCommandHandler = this.parseCommand;
 
-        //DisplayDriver.getDriver().on('keypress', (input:string) => {
-        //    console.log('key: ' + input);
-        //});
-
         this.initInputHandlers();
     };
+
+    private printCharacter(input: string) {
+        if(input != undefined) {
+            this.inputData += input;
+            stdout.write(input);
+        }
+    }
+
+    private printEol() {
+        //console.log('EOL Detected, line: ' + this.inputData)
+        this.parseMessage(this.inputData);
+        this.inputData = '';
+        stdout.cursorTo(0);
+        stdout.moveCursor(0, 1);
+        stdout.write(DisplayDriver.getCurrentPrompt());
+        stdout.clearLine(0);
+        //stdout.moveCursor(0, -1);
+    }
+
+    private printCharRemoval() {
+        this.inputData = DisplayDriver.getDriver().line;
+        stdout.cursorTo(0);
+        stdout.write(DisplayDriver.getCurrentPrompt());
+        stdout.write(this.inputData);
+        stdout.clearLine(1);
+        //stdout.moveCursor(1, 0);
+    }
 
     private initInputHandlers() {
         stdin.on('SIGTERM', (data: Buffer) => {
@@ -42,39 +65,16 @@ export class ClientMessageHandler {
             let sequence: string = data[1].sequence;
             let name = data[1].name;
 
-            if(name == 'return' && this.inputData != '') { //End of line detection
-                //console.log('EOL Detected, line: ' + this.inputData)
-                this.parseMessage(this.inputData);
-                this.inputData = '';
-                stdout.cursorTo(0);
-                stdout.moveCursor(0, 1);
-                stdout.write(DisplayDriver.getCurrentPrompt());
-                stdout.clearLine(0);
+            if(name == 'return' && this.inputData != ''){//End of line detection
+                this.printEol();
                 return;
-            }
+            } 
+               
+            if(name == 'backspace' || name == 'delete') //Character removal
+                this.printCharRemoval();
 
-            if(name == 'backspace' || name == 'delete') {
-                this.inputData = DisplayDriver.getDriver().line;
-                stdout.clearLine(0);
-                stdout.cursorTo(0);
-                stdout.write(DisplayDriver.getCurrentPrompt());
-                stdout.write(this.inputData);
-                //stdout.moveCursor(1, 0);
-                return;
-            }
+            this.printCharacter(char)
 
-            // if(this.currentPhase != Phase.chat &&
-            //     this.currentPhase != Phase.roomList) {
-            //         if(char != undefined) {
-            //             this.inputData += char;
-            //             stdout.write(char);
-            //         }
-            //      }
-
-             if(char != undefined) {
-                 this.inputData += char;
-                 stdout.write(char);
-             }
         });
     }
 
@@ -163,8 +163,8 @@ export class ClientMessageHandler {
 
     showRoomListCommands() {
         DisplayDriver.commandPrint('Available options:\n'
-                            + '/join {room name} => Joins an existing room\n'
-                            + '/create {room name} => Creates a new room\n')
+                            + '\t\t/join {room name} => Joins an existing room\n'
+                            + '\t\t/create {room name} => Creates a new room\n')
     }
 
     chatRoomCommandHandler(command: string) {
@@ -201,10 +201,10 @@ export class ClientMessageHandler {
               break;
 
             case '/pm':
-                commandArgs = command.split(' ');
-                if(this.checkArgc(commandArgs, 3))
-                    this.sendPrivateMessageRequest(commandArgs[1], commandArgs[2]);
-                this.sendPrivateMessageRequest();
+                commandArgs = command.split(' ', 2);
+                let userName = commandArgs[1];
+                let message = command.substring(commandArgs[1].length + 4);
+                this.sendPrivateMessageRequest(userName, message);
                 break;
 
             default:

@@ -94,6 +94,8 @@ export default class DisplayDriver {
         stdout.clearLine(0);
         stdout.cursorTo(0);
         stdout.write(msg);
+        //stdout.moveCursor(0, 1);
+        //console.log(this.currentPrompt)
         stdout.write(this.currentPrompt);
     }
 
