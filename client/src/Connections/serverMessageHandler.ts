@@ -200,6 +200,7 @@ export class ServerMessageHandler {
         if(messageType == 'message') {
             let timestamp = messageObject['timestamp'];
             let userName = messageObject['username'];
+            userName.style.color="#FF0000";
             let message = messageObject['message'];
             DisplayDriver.chat(`${timestamp} <@${userName}> ${message}`);
         }
