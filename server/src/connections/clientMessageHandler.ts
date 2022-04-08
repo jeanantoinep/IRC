@@ -57,6 +57,7 @@ export class ClientMessageHandler {
                 this.io.to(socket.id).emit("register", JSON.stringify({
                     "result": "ok", "username": dataParsed['username']
                 }));
+                socket.data['username'] = dataParsed['username'];
             }
         }
     }
