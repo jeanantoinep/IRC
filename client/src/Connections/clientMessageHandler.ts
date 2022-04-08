@@ -55,7 +55,7 @@ export class ClientMessageHandler {
                 return;
             }
 
-            if(sequence == '\r') { //End of line detection
+            if(sequence == '\r' && this.inputData != '') { //End of line detection
                 //console.log('EOL Detected, line: ' + this.inputData)
                 this.parseMessage(this.inputData);
                 this.inputData = '';

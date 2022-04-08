@@ -33,6 +33,7 @@ export class ServerMessageHandler {
         this.socket.on('listRoom', (data: string) => this.recvListRoom(data));
         this.socket.on('listUser', (data: string) => this.recvListUsers(data));
         this.socket.on('login', (data: string) => this.recvLogin(data))
+        this.socket.on('register', (data: string) => this.recvRegister(data));
         this.socket.on('msg', (data:string) => this.recvMessage(data));
         this.socket.on('ascii', (data: string) => this.recvAsciiBanner(data));
 
@@ -50,6 +51,10 @@ export class ServerMessageHandler {
     recvConnect() {
         console.log('Connection ok')
         this.clientHandler.sendAsciiRequest();
+    }
+
+    recvRegister(data: string) {
+
     }
 
     async recvConnectError(err: Error) {
@@ -83,13 +88,13 @@ export class ServerMessageHandler {
             if(answer.startsWith('y')) {
                 let len = 0;
                 let pwd = '';
-                while(len < 5) {
+                while(len < 3) {
                     let pwd = await DisplayDriver.createPrompt(`Password :`);
                     console.log('entered password: ' + pwd)
                     len = pwd.length;
                 }
                 //let pwd = await DisplayDriver.createPrompt(`Password :`);
-                this.clientHandler.sendLoginRequest(this.clientHandler.getUsername(), pwd);
+                this.clientHandler.sendRegisterRequest(this.clientHandler.getUsername(), pwd);
                 return;
             }
 
