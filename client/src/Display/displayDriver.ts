@@ -1,3 +1,4 @@
+import { Console } from 'console';
 import { stdout, stdin } from 'process';
 import readline from 'readline'
 
@@ -53,7 +54,7 @@ export default class DisplayDriver {
     }
 
     static enableMessageInput(){
-        stdout.write('> ');
+        stdout.write(this.currentPrompt);
     }
 
     static printList(list: string[]) {
@@ -81,6 +82,34 @@ export default class DisplayDriver {
         }
     }
 
+    static getMaxWidth(str: string) {
+        let maxwidth: number = 0;
+        for(let line of str.split('\n')){
+            maxwidth = line.length > maxwidth ? line.length : maxwidth;
+        }
+        return maxwidth;
+    }
+
+    static printBanner(banner: string, center: boolean, clear: boolean) {
+        if(clear)
+            DisplayDriver.clearTerminal();
+        if(!center)
+            DisplayDriver.print(banner);
+        else {
+            let terminalWidth = stdout.columns;
+            let offset = (terminalWidth - 96) /2;
+            let lines = banner.split('\n');
+
+            //DisplayDriver.print(banner)
+            for(let line of lines) {
+                stdout.cursorTo(offset);
+                DisplayDriver.print(line)
+                DisplayDriver.print('\n');
+            }
+        }
+        DisplayDriver.print('\n');
+    }
+
     static chat(msg: string) {
         stdout.clearLine(0);
         stdout.cursorTo(0);
@@ -95,7 +124,7 @@ export default class DisplayDriver {
         stdout.write(msg);
         //stdout.moveCursor(0, 1);
         //console.log(this.currentPrompt)
-        stdout.write(this.currentPrompt);
+        this.rl.line = this.currentPrompt;
     }
 
     static print(msg: string) : void {

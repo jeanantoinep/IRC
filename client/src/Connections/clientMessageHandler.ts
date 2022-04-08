@@ -156,6 +156,10 @@ export class ClientMessageHandler {
                 this.showRoomListCommands();
                 break;
 
+            case '/refresh':
+                this.sendRoomsListRequest();
+                break;
+
             default:
                 DisplayDriver.commandPrint(`You can't use ${commandArgs[0]} in the room selection\n`);
                 break;
