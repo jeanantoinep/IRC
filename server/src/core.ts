@@ -23,6 +23,7 @@ export class Core {
      */
     private initSocket() {
         const io = new Server<ClientToServerEvents, ServerToClientEvents>(3000);
+        console.log("Server launched");
         return io
     }
 }
