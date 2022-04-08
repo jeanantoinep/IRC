@@ -42,9 +42,16 @@ export class ClientMessageHandler {
             let sequence: string = data[1].sequence;
             let name = data[1].name;
 
-            // if(this.currentPhase != Phase.chat &&
-            //     this.currentPhase != Phase.roomList)
-            //      return;
+            if(name == 'return' && this.inputData != '') { //End of line detection
+                //console.log('EOL Detected, line: ' + this.inputData)
+                this.parseMessage(this.inputData);
+                this.inputData = '';
+                stdout.cursorTo(0);
+                stdout.moveCursor(0, 1);
+                stdout.write(DisplayDriver.getCurrentPrompt());
+                stdout.clearLine(0);
+                return;
+            }
 
             if(name == 'backspace' || name == 'delete') {
                 this.inputData = DisplayDriver.getDriver().line;
@@ -56,29 +63,18 @@ export class ClientMessageHandler {
                 return;
             }
 
-            if(name == 'return' && this.inputData != '') { //End of line detection
-                //console.log('EOL Detected, line: ' + this.inputData)
-                this.parseMessage(this.inputData);
-                this.inputData = '';
-                stdout.cursorTo(0);
-                stdout.write('> ');
-                //stdout.clearLine(1);
-                return;
-            }
+            // if(this.currentPhase != Phase.chat &&
+            //     this.currentPhase != Phase.roomList) {
+            //         if(char != undefined) {
+            //             this.inputData += char;
+            //             stdout.write(char);
+            //         }
+            //      }
 
-            if(char != undefined)
-                this.inputData += char;
-
-            if(this.currentPhase == Phase.chat) {
-                //stdout.cursorTo(2);
-                //stdout.write(DisplayDriver.getDriver().line);
-                //return;
-            }
-
-            //stdout.cursorTo(0)
-            if(char != undefined)
-                stdout.write(char);
-
+             if(char != undefined) {
+                 this.inputData += char;
+                 stdout.write(char);
+             }
         });
     }
 
@@ -117,12 +113,15 @@ export class ClientMessageHandler {
     }
 
     parseMessage(message: string) {
-        if(this.currentPhase == Phase.login || this.currentPhase == Phase.load)
-            return;
+
+        if(this.currentPhase != Phase.chat && 
+            this.currentPhase != Phase.roomList)
+                return;
 
         if(message.startsWith('/'))
             return this.phaseCommandHandler(message);
-        else {
+
+        else if(this.currentPhase == Phase.chat) {
             this.sendMessage(message);
             DisplayDriver.resumeInput();
         }
@@ -152,21 +151,20 @@ export class ClientMessageHandler {
                 break;
 
             case '/help':
-                console.log('TEST')
                 this.showRoomListCommands();
                 break;
 
             default:
-                DisplayDriver.print(`You can't use ${commandArgs[0]} in the room selection\n`);
+                DisplayDriver.commandPrint(`You can't use ${commandArgs[0]} in the room selection\n`);
                 break;
         }
 
     }
 
     showRoomListCommands() {
-        DisplayDriver.print(`Available options:
-                            /join {room name} => Joins an existing room
-                            /create {room name} => Creates a new room`)
+        DisplayDriver.commandPrint('Available options:\n'
+                            + '/join {room name} => Joins an existing room\n'
+                            + '/create {room name} => Creates a new room\n')
     }
 
     chatRoomCommandHandler(command: string) {
@@ -217,9 +215,11 @@ export class ClientMessageHandler {
     }
 
     async startLoginProcess() {
-        let validInput = false;
-        let login = '';
-        login = await DisplayDriver.createPrompt('Username: ');
+        let login = await DisplayDriver.createPrompt('Username: ');
+        if(login.length == 0) {
+            this.startLoginProcess()
+            return;
+        }
         this.sendLoginRequest(login);
     }
 
@@ -229,15 +229,12 @@ export class ClientMessageHandler {
 
     public sendLoginRequest(username: string, password: string = '') {
         let loginPacket = {"username": username, "password": password};
-        DisplayDriver.print('Login packet sent: ' + JSON.stringify(loginPacket) + '\n');
-
         this.username = username;
         this.socket.emit('login', JSON.stringify(loginPacket));
     }
 
     public sendRegisterRequest(username: string, password: string) {
         let registerPacket = {"username": username, "password": password};
-        DisplayDriver.print('Register packet sent: ' + JSON.stringify(registerPacket) + '\n');
 
         this.username = username;
         this.socket.emit('register', JSON.stringify(registerPacket));
@@ -245,7 +242,6 @@ export class ClientMessageHandler {
 
     public sendAnonymousLoginRequest(username: string) {
         let loginPacket = {"username": username};
-        DisplayDriver.print('Anonymous login sent: '+JSON.stringify(loginPacket)) + '\n';
         this.username = username;
 
         this.socket.emit('anonymousLogin', JSON.stringify(loginPacket));
@@ -261,12 +257,12 @@ export class ClientMessageHandler {
     };
 
     public sendAddRoomRequest(roomName: string) {
-        DisplayDriver.print('ADD ROOM\n')
         this.socket.emit('addRoom', roomName);
     }
 
     public sendJoinRequest(roomName: string = '') {
-        if(roomName == '') {
+        console.log('room name: ' + roomName)
+        if(roomName.length == 0) {
             DisplayDriver.print('Invalid command /join \n');
             DisplayDriver.print('Usage: /join {room_name}\n');
             return;
@@ -319,7 +315,12 @@ export class ClientMessageHandler {
             return;
         }
 
-        this.socket.emit('pm', userName, message);
+        let data = {
+            'receiver_name': userName,
+            'message': message,
+        }
+
+        this.socket.emit('pm', JSON.stringify(data));
         return;
     };
 

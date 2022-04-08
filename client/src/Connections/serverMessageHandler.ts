@@ -55,8 +55,6 @@ export class ServerMessageHandler {
 
     recvRegister(data: string) {
         let returnData = JSON.parse(data);
-        console.log('Register packet received: '+ data);
-
         if(returnData['result'] == 'username_exists') {
             DisplayDriver.print(`Username ${returnData['username']} already exists !`)
             return;
@@ -75,13 +73,11 @@ export class ServerMessageHandler {
 
     async recvLogin(data: string) {
         let returnData = JSON.parse(data);
-        console.log('Login packet received: '+ data);
-
         if(returnData['result'] == 'need_pwd') {
             let len = 0;
             let passwd = '';
             while(len < 1) {
-                passwd = await DisplayDriver.createPrompt(`Password :`);
+                passwd = await DisplayDriver.createPrompt(`Password: `);
                 len = passwd.length;
             }
             this.clientHandler.sendLoginRequest(this.clientHandler.getUsername(), passwd);
@@ -144,7 +140,7 @@ export class ServerMessageHandler {
         }
 
         if(returnData['result'] == 'login_exists') {
-            DisplayDriver.print('Username is already in use ! Please pick another one')
+            DisplayDriver.print('Username is already in use ! Please pick another one\n')
             let answer = await DisplayDriver.createPrompt(`Username: `);
 
         }
@@ -177,13 +173,13 @@ export class ServerMessageHandler {
         }
 
         if(returnData['result'] == 'room_unknown')
-            DisplayDriver.print(`Room ${returnData['room_name']} doesn't exist.\n`);
+            DisplayDriver.print(`Room ${returnData['room_name']} doesn't exist!\n`);
     }
 
     recvLeaveRoom(data: string) {
         DisplayDriver.leaveChat();
         this.core.consolePhase(Phase.roomList);
-        DisplayDriver.pauseInput();
+        //DisplayDriver.pauseInput();
     }
 
     recvListRoom(data: string) {
