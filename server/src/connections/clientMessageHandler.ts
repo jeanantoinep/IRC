@@ -46,31 +46,25 @@ export class ClientMessageHandler {
         console.log("pm from client", socket.data['username']);
         var dataParsed = JSON.parse(data);
         console.log(data);
-        var result = await this.dbDriver.getUserByUsername(dataParsed['receiver_name']);
-        if (result == "[]") {
+        this.io.to(socket.id).emit("pm", JSON.stringify(
+            { "result": "user_unregistered", "sender_name": socket.data['username'] }));
+        console.log(this.allSockets);
+        var receiverId = this.allSockets[dataParsed['receiver_name'].toLowerCase()];
+        if (receiverId == undefined) {
             this.io.to(socket.id).emit("pm", JSON.stringify(
-                { "result": "user_unregistered", "sender_name": socket.data['username'] }));
+                {
+                    "result": "user_unknown",
+                    "username": dataParsed['receiver_name'].toLowerCase()
+                }))
+            console.log("SOCKET NOT FOUND");
         } else {
-            console.log(this.allSockets);
-            var receiverId = this.allSockets[dataParsed['receiver_name'].toLowerCase()];
-            if (receiverId == undefined) {
-                this.io.to(socket.id).emit("pm", JSON.stringify(
-                    { 
-                        "result": "user_unknown",
-                        "username": dataParsed['receiver_name'].toLowerCase() 
-                    }))
-                console.log("SOCKET NOT FOUND");
-            } else {
-                console.log(receiverId);
-                console.log(socket.data['username']);
-                this.io.to(receiverId).emit("msg", JSON.stringify(
-                    {
-                        "username": socket.data['username'],
-                        "type": "pm",
-                        "message": dataParsed["message"],
-                        "timestamp": this.getTimestamp()
-                    }))
-            }
+            this.io.to(receiverId).emit("msg", JSON.stringify(
+                {
+                    "username": socket.data['username'],
+                    "type": "pm",
+                    "message": dataParsed["message"],
+                    "timestamp": this.getTimestamp()
+                }))
         }
     }
 
