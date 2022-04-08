@@ -36,6 +36,7 @@ export class ServerMessageHandler {
         this.socket.on('register', (data: string) => this.recvRegister(data));
         this.socket.on('msg', (data:string) => this.recvMessage(data));
         this.socket.on('ascii', (data: string) => this.recvAsciiBanner(data));
+        this.socket.on('pm', (data: string) => this.recvPrivateMessage(data));
 
     }
 
@@ -53,10 +54,18 @@ export class ServerMessageHandler {
         this.clientHandler.sendAsciiRequest();
     }
 
+    recvPrivateMessage(data: string) {
+        let returnData = JSON.parse(data);
+        if(returnData['result'] == 'user_unknown') {
+            DisplayDriver.print(`Unknown user: ${returnData['username']} !\n`)
+            return;
+        }
+    }
+
     recvRegister(data: string) {
         let returnData = JSON.parse(data);
         if(returnData['result'] == 'username_exists') {
-            DisplayDriver.print(`Username ${returnData['username']} already exists !`)
+            DisplayDriver.print(`Username ${returnData['username']} already exists !\n`)
             return;
         }
 

@@ -93,6 +93,8 @@ export default class DisplayDriver {
         stdout.clearLine(0);
         stdout.cursorTo(0);
         stdout.write(msg);
+        //stdout.moveCursor(0, 1);
+        //console.log(this.currentPrompt)
         stdout.write(this.currentPrompt);
     }
 
@@ -121,6 +123,20 @@ export default class DisplayDriver {
         readline.clearScreenDown(stdout);
     }
 
+    static formatChatMessage(timestamp: string, username: string, message: string, guest: boolean = false): string {
 
+        return(`${timestamp} ${('<@'+username+'>').padStart(15, ' ')} ${message}`);
+    }
 
+    static formatPrivateMessage(timestamp: string, username: string, message: string): string {
+        return(`${timestamp} ${('<@'+username+'>').padStart(15, ' ')} ${message}`);
+    }
+
+    static formatInfoJoin(timestamp: string, username: string): string {
+        return(`${timestamp} <@${username}> entered the chat !`);
+    }
+
+    static formatInfoLeave(timestamp: string, username: string, reason: string): string {
+        return(`${timestamp} <@${username}> left the chat (${reason}) !`);
+    }
 }

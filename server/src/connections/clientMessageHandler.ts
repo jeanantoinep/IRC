@@ -7,10 +7,12 @@ import { ascii_art } from '../ascii';
 export class ClientMessageHandler {
     private io: Server<ClientToServerEvents, ServerToClientEvents>;
     private dbDriver: DatabaseDriver;
+    private allSockets: { [username: string]: string };
 
     constructor(io: Server<ClientToServerEvents, ServerToClientEvents>, dbDriver: DatabaseDriver) {
         this.io = io;
         this.dbDriver = dbDriver;
+        this.allSockets = {};
         this.init();
     }
 
@@ -40,16 +42,33 @@ export class ClientMessageHandler {
     }
 
     async recvPm(data: string, socket: Socket) {
-        console.log("pm from client", socket.data['username'], "to", JSON.parse(data)['']);
+        console.log("pm from client", socket.data['username']);
         var dataParsed = JSON.parse(data);
+        console.log(data);
         var result = await this.dbDriver.getUserByUsername(dataParsed['receiver_name']);
         if (result == "[]") {
-            
-            this.io.to(socket.data['username']).emit("pm", JSON.stringify(
+            this.io.to(socket.id).emit("pm", JSON.stringify(
                 { "result": "user_unregistered", "sender_name": socket.data['username'] }));
         } else {
-            this.io.to(dataParsed['receiver_name']).emit("pm", JSON.stringify(
-                { "sender_name": socket.data['username'], "message": dataParsed["message"] }));
+            console.log(this.allSockets);
+            var receiverId = this.allSockets[dataParsed['receiver_name'].toLowerCase()];
+            if (receiverId == undefined) {
+                this.io.to(socket.id).emit("pm", JSON.stringify(
+                    { 
+                        "result": "user_unknown",
+                        "username": dataParsed['receiver_name'].toLowerCase() 
+                    }))
+                console.log("SOCKET NOT FOUND");
+            } else {
+                this.io.to(receiverId).emit("msg", JSON.stringify(
+                    {
+                        "username": socket.data['username'],
+                        "type": "pm",
+                        "message": dataParsed["message"],
+                        "timestamp": this.getTimestamp()
+                    }))
+                // { "sender_name": socket.data['username'], "message": dataParsed["message"] }));
+            }
         }
     }
 
@@ -65,6 +84,7 @@ export class ClientMessageHandler {
         } else {
             this.io.to(socket.id).emit("anonymousLogin", JSON.stringify({ "result": "ok" }));
             socket.data['username'] = JSON.parse(result)[0]['username'];
+            this.allSockets[socket.data['username'].toLowerCase()] = socket.id;
         }
     }
 
@@ -86,6 +106,7 @@ export class ClientMessageHandler {
                 if (password == JSON.parse(result2)[0]['password']) { // if password is OK
                     this.io.to(socket.id).emit("login", JSON.stringify({ "result": "ok" }));
                     socket.data['username'] = JSON.parse(result2)[0]['username'];
+                    this.allSockets[socket.data['username'].toLowerCase()] = socket.id;
                 } else {
                     this.io.to(socket.id).emit("login", JSON.stringify({ 'result': 'wrong_pwd' }));
                 }
@@ -97,21 +118,22 @@ export class ClientMessageHandler {
         console.log("register from client", socket.id);
         var dataParsed = JSON.parse(userData);
         var result = await this.dbDriver.getUserByUsername(dataParsed['username']);
-        if (result == "error") {
+        if (result == "error") { // sql error
             this.io.to(socket.id).emit("register", JSON.stringify({ "result": result }))
-        } else if (result != "[]") {
+        } else if (result != "[]") { // username already taken
             this.io.to(socket.id).emit("register", JSON.stringify({
                 "result": "username_exists", "username": dataParsed['username']
             }))
         } else {
             var result2 = await this.dbDriver.addUser(userData);
-            if (result2 == "error") {
+            if (result2 == "error") { // sql error
                 this.io.to(socket.id).emit("register", JSON.stringify({ "result": result }))
-            } else {
+            } else { // new user added
                 this.io.to(socket.id).emit("register", JSON.stringify({
                     "result": "ok", "username": dataParsed['username']
                 }));
                 socket.data['username'] = dataParsed['username'];
+                this.allSockets[socket.data['username'].toLowerCase()] = socket.id;
             }
         }
     }
