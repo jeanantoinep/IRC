@@ -1,4 +1,4 @@
-import { createPool, Pool } from 'mysql2'
+import { createPool, escape, Pool } from 'mysql2'
 
 
 export class DatabaseDriver {
@@ -98,9 +98,15 @@ export class DatabaseDriver {
         console.log(dataParsed);
         var sender = await this.getUserByUsername(senderName);
         var room = await this.getRoomByName(dataParsed['room_name']);
+        var regex = /'/gi;
+        // remplacer les ' par des \'
+        var message: string = dataParsed['message'].replace(regex, "\\\'"); 
+        console.log(message);
+        if (sender == undefined || room == undefined)
+            return 'error'
         return this.query("INSERT INTO `message` (user_id,room_id,message) \
                             VALUES (" + JSON.parse(sender)[0]['id'] + "," + JSON.parse(room)[0]['id'] + ",\
-                            '" + dataParsed['message'] + "')")
+                            '" + message + "')")
             .then((result: any) => {
                 return result['insertId'] as number
             })

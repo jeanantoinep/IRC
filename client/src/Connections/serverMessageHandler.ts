@@ -55,8 +55,6 @@ export class ServerMessageHandler {
 
     recvRegister(data: string) {
         let returnData = JSON.parse(data);
-        console.log('Register packet received: '+ data);
-
         if(returnData['result'] == 'username_exists') {
             DisplayDriver.print(`Username ${returnData['username']} already exists !`)
             return;
@@ -75,13 +73,11 @@ export class ServerMessageHandler {
 
     async recvLogin(data: string) {
         let returnData = JSON.parse(data);
-        console.log('Login packet received: '+ data);
-
         if(returnData['result'] == 'need_pwd') {
             let len = 0;
             let passwd = '';
             while(len < 1) {
-                passwd = await DisplayDriver.createPrompt(`Password :`);
+                passwd = await DisplayDriver.createPrompt(`Password: `);
                 len = passwd.length;
             }
             this.clientHandler.sendLoginRequest(this.clientHandler.getUsername(), passwd);
@@ -90,30 +86,42 @@ export class ServerMessageHandler {
 
         if(returnData['result'] == 'need_auth') {
             let answer = await DisplayDriver.createPrompt(`Username isn't registered: do you want to claim it ? (yes/no): `);
+            let loop = true;
+            let repeat = false;
 
-            if(answer.startsWith('y')) {
-                let len = 0;
-                let pwd = '';
-                while(len < 3) {
-                    pwd = await DisplayDriver.createPrompt(`Password :`);
-                    console.log('entered password: ' + pwd)
-                    len = pwd.length;
-                }
-                //let pwd = await DisplayDriver.createPrompt(`Password :`);
-                this.clientHandler.sendRegisterRequest(this.clientHandler.getUsername(), pwd);
-                return;
-            }
-
-            answer = await DisplayDriver.createPrompt(`Are you satisfied with the username ${this.clientHandler.getUsername()} (yes/no): `);
-
-            if(answer.startsWith('y')) {
-                this.clientHandler.sendAnonymousLoginRequest(this.clientHandler.getUsername());
-                return;
-            }
-            else {
-                this.core.startLoginPhase();
-            }
-        }
+            while(loop) {
+                if (repeat) {
+                  DisplayDriver.clearTerminal();
+                  answer = await DisplayDriver.createPrompt(`Please answer yes or no:`);
+                };
+                if (answer === 'yes' || answer === 'y') {
+                    let len = 0;
+                    let pwd = '';
+                    while(len < 3) {
+                        DisplayDriver.clearTerminal();
+                        pwd = await DisplayDriver.createPrompt(`Please enter a password with at least 3 characters: `);
+                        console.log('entered password: ' + pwd)
+                        len = pwd.length;
+                    }
+                    //let pwd = await DisplayDriver.createPrompt(`Password :`);
+                    this.clientHandler.sendRegisterRequest(this.clientHandler.getUsername(), pwd);
+                    loop = false;
+                    return;
+                } else if (answer === 'no' || answer === 'n') {
+                    answer = await DisplayDriver.createPrompt(`Are you satisfied with the username ${this.clientHandler.getUsername()} (yes/no): `);
+                    if(answer.startsWith('y')) {
+                        this.clientHandler.sendAnonymousLoginRequest(this.clientHandler.getUsername());
+                        return;
+                    }
+                    else {
+                        this.core.startLoginPhase();
+                    };
+                    loop = false;
+                } else {
+                    repeat = true;
+                };
+            };
+        };
 
         if(returnData['result'] == 'wrong_pwd'){
             DisplayDriver.print('Invalid password !\n');
@@ -132,7 +140,7 @@ export class ServerMessageHandler {
         }
 
         if(returnData['result'] == 'login_exists') {
-            DisplayDriver.print('Username is already in use ! Please pick another one')
+            DisplayDriver.print('Username is already in use ! Please pick another one\n')
             let answer = await DisplayDriver.createPrompt(`Username: `);
 
         }
@@ -165,13 +173,13 @@ export class ServerMessageHandler {
         }
 
         if(returnData['result'] == 'room_unknown')
-            DisplayDriver.print(`Room ${returnData['room_name']} doesn't exist.\n`);
+            DisplayDriver.print(`Room ${returnData['room_name']} doesn't exist!\n`);
     }
 
     recvLeaveRoom(data: string) {
         DisplayDriver.leaveChat();
         this.core.consolePhase(Phase.roomList);
-        DisplayDriver.pauseInput();
+        //DisplayDriver.pauseInput();
     }
 
     recvListRoom(data: string) {

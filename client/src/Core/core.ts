@@ -25,11 +25,9 @@ export default class Core{
 
         this.clientMessageHandler = new ClientMessageHandler(this.connection.getSocket());
         this.serverMessageHandler = new ServerMessageHandler(
-                                        this.connection.getSocket(), 
+                                        this.connection.getSocket(),
                                         this.clientMessageHandler,
                                         this);
-
-
     };
 
     public setServerBanner(banner: string) {
@@ -43,7 +41,7 @@ export default class Core{
 
     public async startLoginPhase() {
         DisplayDriver.print('\n')
-        this.clientMessageHandler.startLoginProcess();
+        await this.clientMessageHandler.startLoginProcess();
         this.clientMessageHandler.setPhase(Phase.login);
     }
 
@@ -82,4 +80,5 @@ export default class Core{
               break;
         };
     };
+  };
 };
