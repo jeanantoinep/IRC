@@ -36,14 +36,12 @@ export class ClientMessageHandler {
     }
 
     private printEol() {
-        //console.log('EOL Detected, line: ' + this.inputData)
         this.parseMessage(this.inputData);
         this.inputData = '';
         stdout.cursorTo(0);
         stdout.moveCursor(0, 1);
         stdout.write(DisplayDriver.getCurrentPrompt());
         stdout.clearLine(0);
-        //stdout.moveCursor(0, -1);
     }
 
     private printCharRemoval(direction: number) {
@@ -52,7 +50,6 @@ export class ClientMessageHandler {
         stdout.write(DisplayDriver.getCurrentPrompt());
         stdout.write(this.inputData);
         stdout.clearLine(1);
-        //stdout.moveCursor(direction, 0);
     }
 
     private initInputHandlers() {
@@ -60,14 +57,12 @@ export class ClientMessageHandler {
             this.socket.emit('exit', this.roomName);
         });
 
-        // stdin.on('keypress', (...input) => {
         stdin.on('keypress', (...data: any) => {
             let char: string = data[0];
             let sequence: string = data[1].sequence;
             let name = data[1].name;
-            //console.log(data)
 
-            if(name == 'c' && data[1].ctrl == true)
+            if (name == 'c' && data[1].ctrl == true)
                 this.socket.emit('exit', this.roomName);
 
             if (name == 'return' && this.inputData != '') {//End of line detection
@@ -75,26 +70,7 @@ export class ClientMessageHandler {
                 return;
             }
 
-            // if(name == 'right') {
-            //     if(DisplayDriver.getCursorPos() <= this.inputData.length) {
-            //         DisplayDriver.moveCursor(1, 0);
-            //         console.log('Pos: ' + DisplayDriver.getCursorPos()+' , length: ' + this.inputData.length)
-            //         //stdout.moveCursor(1, 0);
-            //     }
-            //         return;
-            // }
-
-            // if(name == 'left') {
-            //      //console.log(DisplayDriver.getCursorPos().cols)
-            //     if(DisplayDriver.getCursorPos() > 0) {
-            //         DisplayDriver.moveCursor(-1, 0);
-            //         //stdout.moveCursor(-1, 0);
-            //     }
-            //     return;
-            //     //console.log(DisplayDriver.getCursorPos())
-            // }
-
-            if(name == 'backspace' || name == 'delete') {//Character removal
+            if (name == 'backspace' || name == 'delete') {//Character removal
                 let direction = (name = 'backspace' ? -1 : 1);
                 this.printCharRemoval(direction);
                 return;
@@ -131,7 +107,6 @@ export class ClientMessageHandler {
             case Phase.chat:
                 this.phaseCommandHandler = this.chatRoomCommandHandler;
                 this.currentPhase = Phase.chat;
-                //this.initInputHandlers();
                 break;
 
             default:
@@ -167,14 +142,11 @@ export class ClientMessageHandler {
                 break;
 
             case '/join':
-                if (this.checkArgc(commandArgs, 2))
-                    this.sendJoinRequest(commandArgs[1])
+                this.sendJoinRequest(commandArgs[1])
                 break;
 
             case '/create':
-                if (this.checkArgc(commandArgs, 2))
-                    this.sendCreateRoomRequest(commandArgs[1]);
-                this.sendCreateRoomRequest();
+                this.sendCreateRoomRequest(commandArgs[1]);
                 break;
 
             case '/help':
@@ -249,12 +221,12 @@ export class ClientMessageHandler {
     }
 
     public sendAcceptFriendRequest(username: string) {
-        if(username == '' || username == undefined) {
+        if (username == '' || username == undefined) {
             DisplayDriver.print(`Invalid command /accept \n`);
             DisplayDriver.print('Usage: /accept {user_name}');
         }
 
-        this.socket.emit('acceptFriend', JSON.stringify({'username': username}));
+        this.socket.emit('acceptFriend', JSON.stringify({ 'username': username }));
     }
 
     parseCommand(command: string) {
@@ -326,7 +298,7 @@ export class ClientMessageHandler {
     };
 
     public sendLeaveRequest() {
-        this.socket.emit('leaveRoom', JSON.stringify({'room_name': this.roomName}));
+        this.socket.emit('leaveRoom', JSON.stringify({ 'room_name': this.roomName }));
         return;
     };
 
@@ -368,7 +340,7 @@ export class ClientMessageHandler {
             DisplayDriver.print('Usage: /add {user_name}\n');
             return;
         };
-        this.socket.emit('addFriend', JSON.stringify({'username' : userName}));
+        this.socket.emit('addFriend', JSON.stringify({ 'username': userName }));
         return;
     };
 
