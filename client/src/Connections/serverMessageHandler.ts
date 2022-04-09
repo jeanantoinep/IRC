@@ -48,6 +48,7 @@ export class ServerMessageHandler {
 
     recvConnect() {
         this.clientHandler.sendAsciiRequest();
+        this.core.consolePhase(Phase.load);
     }
 
     recvPrivateMessage(data: string) {

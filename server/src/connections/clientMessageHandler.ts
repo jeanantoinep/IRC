@@ -212,7 +212,6 @@ export class ClientMessageHandler {
             var userType = this.connectedUsers[socket.id];
             usernames.push({'username': element.data['username'], 'user_type': userType});
         });
-        console.log(usernames)
         this.io.to(socket.id).emit("listUser", JSON.stringify({ "users": usernames }));
     }
 
