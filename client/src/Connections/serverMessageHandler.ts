@@ -1,7 +1,7 @@
 import DisplayDriver from "../Display/displayDriver";
 import { ServerToClientEvents, ClientToServerEvents } from './socketEvents'
 import { Socket } from 'socket.io-client'
-import { rickRoll } from "../rick";
+import { rickRoll, pika, gotem } from "../ascii";
 
 import { ClientMessageHandler } from "./clientMessageHandler";
 import Core, { Phase } from '../Core/core'
@@ -285,7 +285,13 @@ export class ServerMessageHandler {
             let guest =  (messageObject['user_type'] == 'guest');
 
             if (message == 'rickroll') {
-              DisplayDriver.chat(rickRoll);
+              DisplayDriver.commandPrint(rickRoll);
+            }
+            else if (message == 'surprisedpikachu') {
+              DisplayDriver.commandPrint(pika);
+            }
+            else if (message == "got'em") {
+              DisplayDriver.commandPrint(gotem);
             }
             else if (userName == this.clientHandler.getUsername()) {
                 let formated = DisplayDriver.formatChatMessage(timestamp, userName, message, guest, true);
