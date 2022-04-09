@@ -230,7 +230,7 @@ export default class DisplayDriver {
                              self = false): string {
 
         let line = timestamp + ' ';
-        let prefix = guest ? '+' : '@';
+        const prefix = guest ? '+' : '@';
         if (self)
           line += String('<\x1b[32m' + prefix + username + '\x1b[0m> ').padStart(25, ' ');
         else
@@ -260,15 +260,17 @@ export default class DisplayDriver {
 
     static formatInfoJoin(timestamp: string, username: string, guest:boolean): string {
         let line = timestamp + ' ';
+        const prefix = guest ? '+' : '@';
         line += ''.padStart(16, ' ');
-        line += username + ' entered the chat !'
+      line += '\x1b[32m' + prefix + username + '\x1b[0m' + ' entered the chat !'
         return line;
     }
 
     static formatInfoLeave(timestamp: string, username: string, reason: string, guest:boolean): string {
         let line = timestamp + ' ';
+        const prefix = guest ? '+' : '@';
         line += ''.padStart(16, ' ');
-        line += username + ' left the chat ! '
+        line += '\x1b[32m' + prefix + username + '\x1b[0m' + ' left the chat ! '
         line += '(' + reason + ')';
         return line
     }

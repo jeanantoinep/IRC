@@ -264,9 +264,9 @@ export class ServerMessageHandler {
             if(userData['username'] == undefined)
                 continue;
             if(userData['user_type'] == 'guest')
-                DisplayDriver.chat(''.padStart(25) + '+' + userData['username']);
+                DisplayDriver.chat(''.padStart(25) + '+' + '\x1b[32m' + userData['username'] + '\x1b[0m');
             else
-                DisplayDriver.chat(''.padStart(25) + '@' + userData['username']);
+                DisplayDriver.chat(''.padStart(25) + '@' + '\x1b[32m' + userData['username'] + '\x1b[0m');
         };
 
         //console.log(reurnData)

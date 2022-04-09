@@ -218,13 +218,11 @@ export class ClientMessageHandler {
                 break;
 
             case '/add':
-                if (this.checkArgc(commandArgs, 2))
-                    this.sendAddFriendRequest(commandArgs[1]);
-                this.sendAddFriendRequest();
+                this.sendAddFriendRequest(commandArgs[1]);
                 break;
 
             case '/accept':
-                //if(this.checkArgc())
+                this.sendAcceptFriendRequest(commandArgs[1]);
                 break;
 
             case '/pm':
@@ -248,6 +246,15 @@ export class ClientMessageHandler {
             return;
         }
         this.sendLoginRequest(login);
+    }
+
+    public sendAcceptFriendRequest(username: string) {
+        if(username == '' || username == undefined) {
+            DisplayDriver.print(`Invalid command /accept \n`);
+            DisplayDriver.print('Usage: /accept {user_name}');
+        }
+
+        this.socket.emit('acceptFriend', JSON.stringify({'username': username}));
     }
 
     parseCommand(command: string) {
@@ -361,7 +368,6 @@ export class ClientMessageHandler {
             DisplayDriver.print('Usage: /add {user_name}\n');
             return;
         };
-
         this.socket.emit('addFriend', JSON.stringify({'username' : userName}));
         return;
     };

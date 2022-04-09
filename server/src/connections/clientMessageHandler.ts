@@ -51,17 +51,12 @@ export class ClientMessageHandler {
     async recvAddFriend(data: string, socket: Socket) {
         console.log("add friend from client", socket.data['username']);
         var parsedData = JSON.parse(data);
-        // var result = await this.dbDriver.getUserByUsername(data);
-        console.log(parsedData['username']);
-        console.log(this.allSockets);
         var receiverId = this.allSockets[parsedData['username'].toLowerCase()];
         var senderType;
         var receiverType;
-        console.log(receiverId);
 
         if (receiverId != undefined)
             receiverType = this.connectedSockets[receiverId];
-        console.log(receiverType);
 
         if (socket.id != undefined) {
             senderType = this.connectedSockets[socket.id];
@@ -79,10 +74,11 @@ export class ClientMessageHandler {
         }
     }
 
-    recvAcceptFriend(friendName: string, socket: Socket) {
+    recvAcceptFriend(data: string, socket: Socket) {
         console.log("acceptFriend from client", socket.data['username']);
-        let data = JSON.stringify({ "user_id_1": socket.data['username'], "user_id_2": this.allSockets[friendName.toLowerCase()] });
-        let result = this.dbDriver.addFriend(data);
+        var parsedData = JSON.parse(data);
+        let addData = JSON.stringify({ "user_id_1": this.allSockets[socket.data['username']], "user_id_2": this.allSockets[parsedData['username'].toLowerCase()] });
+        let result = this.dbDriver.addFriend(addData);
         console.log(result);
 
         // pool.query("INSERT INTO `friend` (name) VALUES (?)", [friendName], function (err, result) {
@@ -189,7 +185,6 @@ export class ClientMessageHandler {
             try {
                 socket.join(roomName.toLowerCase());
                 if (socket.data['username'] != undefined) {
-                    console.log("passage");
                     this.allSockets[socket.data['username'].toLowerCase()] = socket.id;
                 }
                 this.io.to(socket.id).emit("joinRoom", JSON.stringify({ "result": "ok", "room_name": roomName }));
