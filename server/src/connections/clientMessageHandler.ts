@@ -51,17 +51,12 @@ export class ClientMessageHandler {
     async recvAddFriend(data: string, socket: Socket) {
         console.log("add friend from client", socket.data['username']);
         var parsedData = JSON.parse(data);
-        // var result = await this.dbDriver.getUserByUsername(data);
-        console.log(parsedData['username']);
-        console.log(this.allSockets);
         var receiverId = this.allSockets[parsedData['username'].toLowerCase()];
         var senderType;
         var receiverType;
-        console.log(receiverId);
 
         if (receiverId != undefined)
             receiverType = this.connectedSockets[receiverId];
-        console.log(receiverType);
 
         if (socket.id != undefined) {
             senderType = this.connectedSockets[socket.id];
