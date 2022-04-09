@@ -109,7 +109,7 @@ export class ServerMessageHandler {
                         pwd = await DisplayDriver.createPrompt(`Please enter a password with at least 3 characters: `);
                         len = pwd.length;
                     }
-                    //let pwd = await DisplayDriver.createPrompt(`Password :`);
+
                     this.clientHandler.sendRegisterRequest(this.clientHandler.getUsername(), pwd);
                     loop = false;
                     return;
@@ -227,35 +227,12 @@ export class ServerMessageHandler {
     };
 
     recvListRoom(data: string) {
-
-        // DisplayDriver.print(`
-        // ╦═╗┌─┐┌─┐┌┬┐  ╦  ┬┌─┐┌┬┐
-        // ╠╦╝│ ││ ││││  ║  │└─┐ │
-        // ╩╚═└─┘└─┘┴ ┴  ╩═╝┴└─┘ ┴`+'\n', true)
         DisplayDriver.print('Room List\n\n', true)
         let roomsArray = JSON.parse(data);
 
         let rows = 0;
 
         DisplayDriver.printTable(roomsArray, 5);
-        /*
-        roomsArray.forEach((room:any) => {
-           DisplayDriver.print('╔');
-            for(let i = 0; i < room['name'].toString().length + 2; i++) {
-              DisplayDriver.print('═');
-            };
-            DisplayDriver.print('╗' + '\n');
-            DisplayDriver.print('║ ');
-            DisplayDriver.print(room['name']);
-            DisplayDriver.print(' ║' + '\n');
-            DisplayDriver.print('╚');
-            for(let i = 0; i < room['name'].toString().length + 2; i++) {
-              DisplayDriver.print('═');
-            };
-            DisplayDriver.print('╝' + '\n');
-            rows++;
-        });
-        */
         DisplayDriver.scrollDown(19);
         DisplayDriver.print('Feeling lost? Type /help at anytime to get the available commands!\n', true)
         DisplayDriver.print(DisplayDriver.getCurrentPrompt());
@@ -274,7 +251,6 @@ export class ServerMessageHandler {
                 DisplayDriver.chat(''.padStart(25) + '@' + '\x1b[32m' + userData['username'] + '\x1b[0m');
         };
 
-        //console.log(reurnData)
     };
 
     recvMessage(messageData: string) {

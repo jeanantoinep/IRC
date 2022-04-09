@@ -2,9 +2,6 @@ import { Console } from 'console';
 import { stdout, stdin } from 'process';
 import readline from 'readline'
 
-
-
-
 export default class DisplayDriver {
     static rl: readline.Interface = this.createReadlineInterface();
 
@@ -27,7 +24,6 @@ export default class DisplayDriver {
     static createReadlineInterface() : readline.Interface {
         let rl = readline.createInterface({
             input: stdin,
-            //output: stdout,
             terminal: true,
         });
 
@@ -47,7 +43,6 @@ export default class DisplayDriver {
 
     static resumeInput() {
         this.rl.resume();
-        //stdout.write('> ');
     }
 
     static enableInput() {
@@ -123,7 +118,6 @@ export default class DisplayDriver {
             let offset = (terminalWidth - 96) /2;
             let lines = banner.split('\n');
 
-            //DisplayDriver.print(banner)
             for(let line of lines) {
                 stdout.cursorTo(offset);
                 DisplayDriver.print(line)
@@ -166,7 +160,6 @@ export default class DisplayDriver {
             stdout.cursorTo(0);
             stdout.moveCursor(0, -lines.length + 1);
             stdout.clearScreenDown();
-            //console.log(lines)
             lines.forEach((line:string) => {
                 stdout.clearLine(0);
                 stdout.cursorTo(0);
@@ -184,18 +177,14 @@ export default class DisplayDriver {
         stdout.clearLine(0);
         stdout.cursorTo(0);
         stdout.write(msg);
-        //this.rl.line = this.currentPrompt;
     }
 
     static print(msg: string, center:boolean = false) : void {
-        //let currentLine = this.rl.line;
-        //stdout.moveCursor(5, 0);
         if(center) {
             let offset = Math.floor((stdout.columns - msg.length) /2);
             stdout.cursorTo(offset);
         }
         stdout.write(msg);
-        //stdout.write(currentLine);
     }
 
     static dump(data: any) {
@@ -208,7 +197,6 @@ export default class DisplayDriver {
         let answer =  await new Promise<string>((resolve, reject) => {
             this.rl.question(message, (input) => {
                 this.currentPrompt = '';
-                //DisplayDriver.print('\n');
                 resolve(input);
             });
         });

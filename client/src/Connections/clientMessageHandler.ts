@@ -36,14 +36,12 @@ export class ClientMessageHandler {
     }
 
     private printEol() {
-        //console.log('EOL Detected, line: ' + this.inputData)
         this.parseMessage(this.inputData);
         this.inputData = '';
         stdout.cursorTo(0);
         stdout.moveCursor(0, 1);
         stdout.write(DisplayDriver.getCurrentPrompt());
         stdout.clearLine(0);
-        //stdout.moveCursor(0, -1);
     }
 
     private printCharRemoval(direction: number) {
@@ -52,7 +50,6 @@ export class ClientMessageHandler {
         stdout.write(DisplayDriver.getCurrentPrompt());
         stdout.write(this.inputData);
         stdout.clearLine(1);
-        //stdout.moveCursor(direction, 0);
     }
 
     private initInputHandlers() {
@@ -60,12 +57,10 @@ export class ClientMessageHandler {
             this.socket.emit('exit', this.roomName);
         });
 
-        // stdin.on('keypress', (...input) => {
         stdin.on('keypress', (...data: any) => {
             let char: string = data[0];
             let sequence: string = data[1].sequence;
             let name = data[1].name;
-            //console.log(data)
 
             if(name == 'c' && data[1].ctrl == true)
                 this.socket.emit('exit', this.roomName);
@@ -74,25 +69,6 @@ export class ClientMessageHandler {
                 this.printEol();
                 return;
             }
-
-            // if(name == 'right') {
-            //     if(DisplayDriver.getCursorPos() <= this.inputData.length) {
-            //         DisplayDriver.moveCursor(1, 0);
-            //         console.log('Pos: ' + DisplayDriver.getCursorPos()+' , length: ' + this.inputData.length)
-            //         //stdout.moveCursor(1, 0);
-            //     }
-            //         return;
-            // }
-
-            // if(name == 'left') {
-            //      //console.log(DisplayDriver.getCursorPos().cols)
-            //     if(DisplayDriver.getCursorPos() > 0) {
-            //         DisplayDriver.moveCursor(-1, 0);
-            //         //stdout.moveCursor(-1, 0);
-            //     }
-            //     return;
-            //     //console.log(DisplayDriver.getCursorPos())
-            // }
 
             if(name == 'backspace' || name == 'delete') {//Character removal
                 let direction = (name = 'backspace' ? -1 : 1);
@@ -131,7 +107,6 @@ export class ClientMessageHandler {
             case Phase.chat:
                 this.phaseCommandHandler = this.chatRoomCommandHandler;
                 this.currentPhase = Phase.chat;
-                //this.initInputHandlers();
                 break;
 
             default:
