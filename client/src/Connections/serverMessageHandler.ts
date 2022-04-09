@@ -182,9 +182,9 @@ export class ServerMessageHandler {
     recvAddRoom(data: string) {
         let returnData = JSON.parse(data);
         if (returnData['result'] == 'success') {
-            DisplayDriver.commandPrint(`Room ${returnData['room_name']} successfully created!\n\n`);
-            DisplayDriver.commandPrint('Type /refresh to refresh the rooms list.\n\n');
-            DisplayDriver.commandPrint(`Type /join ${returnData['room_name']} to join the room.\n\n`)
+            DisplayDriver.commandPrint(`Room ${returnData['room_name']} successfully created!\n`);
+            DisplayDriver.commandPrint('Type /refresh to refresh the rooms list.\n');
+            DisplayDriver.commandPrint(`Type /join ${returnData['room_name']} to join the room.\n`)
         }
 
     };
