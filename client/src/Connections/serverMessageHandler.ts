@@ -248,16 +248,16 @@ export class ServerMessageHandler {
 
             if (message == 'rickroll') {
               DisplayDriver.chat(rickRoll);
-            } 
+            }
             else if (userName == this.clientHandler.getUsername()) {
                 let formated = DisplayDriver.formatChatMessage(timestamp, userName, message, guest, true);
                 DisplayDriver.chat(formated);
-            } 
+            }
             else {
                 let formated = DisplayDriver.formatChatMessage(timestamp, userName, message, guest, false);
                 DisplayDriver.chat(formated);
             };
-        } 
+        }
         else if (messageType == 'pm') {
             let formatedMessage = DisplayDriver.formatPrivateMessage(
                 messageObject['timestamp'],
