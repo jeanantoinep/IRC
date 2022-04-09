@@ -49,6 +49,7 @@ export class ServerMessageHandler {
 
     recvConnect() {
         this.clientHandler.sendAsciiRequest();
+        this.core.consolePhase(Phase.load);
     }
 
     recvPrivateMessage(data: string) {
@@ -146,12 +147,20 @@ export class ServerMessageHandler {
         if (returnData['result'] == 'login_exists') {
             DisplayDriver.print('Username is already in use ! Please pick another one\n')
             let answer = await DisplayDriver.createPrompt(`Username: `);
-
         };
     };
 
     recvAddFriend(data: string) {
+        let returnData = JSON.parse(data);
+        if(returnData['result'] == 'ok') {
+            DisplayDriver.commandPrint(`Friend request to ${returnData['room_name']} sent !\n`);
+            return;
+        }
 
+        if(returnData['result'] == 'unknown_user') {
+            DisplayDriver.commandPrint(`User ${returnData['room_name']} isn't online ! !\n`);
+            return;
+        }
     };
 
     recvAcceptFriend(data: string) {
@@ -242,11 +251,16 @@ export class ServerMessageHandler {
         let returnData = JSON.parse(data);
 
         DisplayDriver.chat(''.padStart(25) + 'Users in the current channel: ')
-        returnData['usernames'].forEach((username:string) => {
-            DisplayDriver.chat(''.padStart(25) + username);
-        });
+        for(let userData of returnData['users']) {
+            if(userData['username'] == undefined)
+                continue;
+            if(userData['user_type'] == 'guest')
+                DisplayDriver.chat(''.padStart(25) + '+' + userData['username']);
+            else
+                DisplayDriver.chat(''.padStart(25) + '@' + userData['username']);
+        };
 
-        //console.log(returnData)
+        //console.log(reurnData)
     };
 
     recvMessage(messageData: string) {
@@ -254,6 +268,7 @@ export class ServerMessageHandler {
             return;
 
         let messageObject = JSON.parse(messageData);
+        console.log(messageData)
         let messageType = messageObject['type'];
 
         if (messageType == 'message') {
