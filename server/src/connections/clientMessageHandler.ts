@@ -41,55 +41,41 @@ export class ClientMessageHandler {
             socket.on("listUser", (roomName: string) => this.recvListUser(roomName, socket));
             socket.on("leaveRoom", (data: string) => this.recvLeaveRoom(data, socket));
             socket.on("pm", (data: string) => this.recvPm(data, socket));
+            socket.on("addFriend", (username: string) => this.recvAddFriend(username, socket));
+            socket.on("acceptFriend", (username: string) => this.recvAcceptFriend(username, socket));
             socket.on("exit", (roomName: string) => this.recvExit(roomName, socket));
             socket.on("disconnecting", () => this.recvDisconnecting(socket));
         })
     }
 
-    recvExit(roomName: string, socket: Socket) {
-        delete this.allSockets[socket.data['username'].toLowerCase()];
-        delete this.connectedUsers[socket.id];
-        if (roomName != "") {
-            this.io.to(roomName.toLowerCase()).emit("msg", JSON.stringify(
-                {
-                    "timestamp": this.getTimestamp(),
-                    "type": "leave",
-                    "reason": "Exit",
-                    "username": socket.data['username']
-                }));
-        }
-    }
+    async recvAddFriend(data: string, socket: Socket) {
+        console.log("add friend from client", socket.data['username']);
+        // var parsedData = JSON.parse(data);
+        // var result = await this.dbDriver.getUserByUsername(data);
+        var result = this.allSockets[data];
+        console.log(result);
 
-    recvDisconnecting(socket: Socket) {
-        if(this.allSockets[socket.data['username']] != undefined) {
-            delete this.allSockets[socket.data['username'].toLowerCase()];
-            delete this.connectedUsers[socket.id];
-        }
-
-        if (socket.rooms.size > 1) {
-            var socketRooms = socket.rooms.values();
-            socketRooms.next();
-            this.io.to(socketRooms.next()['value'].toLowerCase()).emit("msg", JSON.stringify(
-                {
-                    "timestamp": this.getTimestamp(),
-                    "type": "leave",
-                    "reason": "Connection timed out",
-                    "username": socket.data['username']
-                }));
-        }
-    }
-
-    async recvHistory(data: string, socket: Socket) {
-        console.log("history from client", socket.data['username']);
-        var parsedData = JSON.parse(data);
-        var result = await this.dbDriver.getRoomMessages(parsedData['room_name']); // get room messages from bdd
-        if (result == "error") {
-            this.io.to(socket.id).emit("history", JSON.stringify({ "result": result })); // emit error to client
-        } else if (result == "[]") {
-            this.io.to(socket.id).emit("history", JSON.stringify({ "result": "no_messages" }));
+        if (result == undefined) {
+            this.io.to(socket.id).emit("addFriend", JSON.stringify({ "result": "user_unknown", "username": socket.data['username'] }));
+        } else if (result == socket.id) {
+            this.io.to(socket.id).emit("addFriend", JSON.stringify({ "result": "self", "username": socket.data['username']}));
         } else {
-            this.io.to(socket.id).emit("history", result);
+            this.io.to(result).emit("addFriend", JSON.stringify({ "result": "ok", "username": socket.data['username'] }));
+            this.io.to(socket.id).emit("addFriend", JSON.stringify({ "result": "ok" }));
         }
+    }
+
+    recvAcceptFriend(friendName: string, socket: Socket) {
+        console.log("acceptFriend from client", socket.data['username']);
+        let result = this.dbDriver.acceptFriend(friendName);
+        console.log(result);
+        // pool.query("INSERT INTO `friend` (name) VALUES (?)", [friendName], function (err, result) {
+        //     if (err) {
+        //         io.emit("acceptFriend", JSON.stringify({"answer":"Error while trying to accept a friend"}))
+        //         throw err;
+        //     }
+        //     io.emit("acceptFriend", JSON.stringify({"answer":"Friend accepted"}))
+        // });
     }
 
     recvAscii(socket: Socket) {
@@ -156,7 +142,6 @@ export class ClientMessageHandler {
                     "result": "ok", "username": dataParsed['username']
                 }));
                 socket.data['username'] = dataParsed['username'];
-                this.allSockets[socket.data['username'].toLowerCase()] = socket.id;
             }
         }
     }
@@ -189,15 +174,33 @@ export class ClientMessageHandler {
         if (result != "[]") {
             try {
                 socket.join(roomName.toLowerCase());
+                this.allSockets[socket.data['username'].toLowerCase()] = socket.id;
                 this.io.to(socket.id).emit("joinRoom", JSON.stringify({ "result": "ok", "room_name": roomName }));
-                this.io.to(roomName.toLowerCase())
-                    .emit("msg", JSON.stringify({ 'username': socket.data['username'], 'timestamp': this.getTimestamp(), 'type' : 'join'}));
+                this.io.to(roomName.toLowerCase()).emit("msg", JSON.stringify(
+                    {
+                         'username': socket.data['username'],
+                         'timestamp': this.getTimestamp(),
+                         'type': 'join' 
+                    }));
             } catch (e) {
                 console.log(e);
                 this.io.to(socket.id).emit("joinRoom", JSON.stringify({ "result": "error", "room_name": roomName }));
             }
         } else {
             this.io.to(socket.id).emit("joinRoom", JSON.stringify({ "result": "room_unknown", "room_name": roomName }));
+        }
+    }
+
+    async recvHistory(data: string, socket: Socket) {
+        console.log("history from client", socket.data['username']);
+        var parsedData = JSON.parse(data);
+        var result = await this.dbDriver.getRoomMessages(parsedData['room_name']); // get room messages from bdd
+        if (result == "error") {
+            this.io.to(socket.id).emit("history", JSON.stringify({ "result": result })); // emit error to client
+        } else if (result == "[]") {
+            this.io.to(socket.id).emit("history", JSON.stringify({ "result": "no_messages" }));
+        } else {
+            this.io.to(socket.id).emit("history", result);
         }
     }
 
@@ -262,17 +265,17 @@ export class ClientMessageHandler {
     recvLeaveRoom(data: string, socket: Socket) {
         console.log("leaveRoom " + JSON.parse(data)['room_name'] + " from client", socket.data['username']);
         var parsedData = JSON.parse(data);
-        try {
-            //socket.leave(parsedData['room_name'].toLowerCase());
+        if (this.allSockets[socket.data['username']] != undefined)
+            delete this.allSockets[socket.data['username'].toLowerCase()];
+        
+            try {
             this.io.to(socket.id).emit("leaveRoom", JSON.stringify({ "result": "ok", "room_name": parsedData['room_name'] }));
-            var socketRooms = socket.rooms.keys();
-            //Object.keys(socketRooms)[1]
             this.io.to(JSON.parse(data)['room_name']).emit("msg", JSON.stringify(
                 {
-                    "timestamp":this.getTimestamp(),
-                    "type":"leave",
-                    "reason":"Disconnected",
-                    "username":socket.data['username']
+                    "timestamp": this.getTimestamp(),
+                    "type": "leave",
+                    "reason": "Disconnected",
+                    "username": socket.data['username']
                 }));
             socket.leave(parsedData['room_name'].toLowerCase());
 
@@ -282,16 +285,35 @@ export class ClientMessageHandler {
         }
     }
 
-    recvAcceptFriend(friendName: string) {
-        console.log("acceptFriend from client");
-        let result = this.dbDriver.acceptFriend(friendName);
-        // console.log(result)
-        // pool.query("INSERT INTO `friend` (name) VALUES (?)", [friendName], function (err, result) {
-        //     if (err) {
-        //         io.emit("acceptFriend", JSON.stringify({"answer":"Error while trying to accept a friend"}))
-        //         throw err;
-        //     }
-        //     io.emit("acceptFriend", JSON.stringify({"answer":"Friend accepted"}))
-        // });
+    recvExit(roomName: string, socket: Socket) {
+        if (this.allSockets[socket.data['username']] != undefined)
+            delete this.allSockets[socket.data['username'].toLowerCase()];
+        
+        if (roomName != "") {
+            this.io.to(roomName.toLowerCase()).emit("msg", JSON.stringify(
+                {
+                    "timestamp": this.getTimestamp(),
+                    "type": "leave",
+                    "reason": "Exit",
+                    "username": socket.data['username']
+                }));
+        }
+    }
+
+    recvDisconnecting(socket: Socket) {
+        if (this.allSockets[socket.data['username']] != undefined)
+            delete this.allSockets[socket.data['username'].toLowerCase()];
+
+        if (socket.rooms.size > 1) {
+            var socketRooms = socket.rooms.values();
+            socketRooms.next();
+            this.io.to(socketRooms.next()['value'].toLowerCase()).emit("msg", JSON.stringify(
+                {
+                    "timestamp": this.getTimestamp(),
+                    "type": "leave",
+                    "reason": "Connection timed out",
+                    "username": socket.data['username']
+                }));
+        }
     }
 }
