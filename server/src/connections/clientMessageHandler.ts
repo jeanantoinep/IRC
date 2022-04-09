@@ -169,7 +169,7 @@ export class ClientMessageHandler {
     }
 
     async recvAddRoom(roomName: string, socket: Socket) {
-        console.log("addRoom from client", socket.data['username']);
+        console.log("addRoom: " + roomName + " from client", socket.data['username']);
         var result = await this.dbDriver.addRoom(roomName.toLowerCase());
         if (result == 'duplicate_entry') {
             this.io.to(socket.id).emit("addRoom", JSON.stringify({ "result": "room_exists", "room_name": roomName })); // emit error to client
@@ -179,7 +179,7 @@ export class ClientMessageHandler {
     }
 
     async recvJoinRoom(roomName: string, socket: Socket) {
-        console.log("joinRoom " + roomName + " from client", socket.data['username']);
+        console.log("joinRoom: " + roomName + " from client", socket.data['username']);
         var result = await this.dbDriver.getRoomByName(roomName);
         if (result != "[]") {
             try {
@@ -204,8 +204,8 @@ export class ClientMessageHandler {
     }
 
     async recvHistory(data: string, socket: Socket) {
-        console.log("history from client", socket.data['username']);
         var parsedData = JSON.parse(data);
+        console.log("history of " + parsedData['room_name'] + " from client", socket.data['username']);
         var result = await this.dbDriver.getRoomMessages(parsedData['room_name']); // get room messages from bdd
         if (result == "error") {
             this.io.to(socket.id).emit("history", JSON.stringify({ "result": result })); // emit error to client
@@ -264,7 +264,7 @@ export class ClientMessageHandler {
                     "result": "user_unknown",
                     "username": dataParsed['receiver_name'].toLowerCase()
                 }))
-            console.log("SOCKET NOT FOUND");
+            console.log("socket not found");
         } else {
             this.io.to(receiverId).to(socket.id).emit("msg", JSON.stringify(
                 {
@@ -278,7 +278,7 @@ export class ClientMessageHandler {
     }
 
     recvLeaveRoom(data: string, socket: Socket) {
-        console.log("leaveRoom " + JSON.parse(data)['room_name'] + " from client", socket.data['username']);
+        console.log("leaveRoom: " + JSON.parse(data)['room_name'] + " from client", socket.data['username']);
         var parsedData = JSON.parse(data);
         if (socket.data['username'] != undefined) {
             delete this.allSockets[socket.data['username'].toLowerCase()];
