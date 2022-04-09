@@ -1,7 +1,7 @@
 import DisplayDriver from "../Display/displayDriver";
 import { ServerToClientEvents, ClientToServerEvents } from './socketEvents'
 import { Socket } from 'socket.io-client'
-import { rickRoll } from "../rick";
+import { rickRoll, pika, gotem } from "../ascii";
 
 import { ClientMessageHandler } from "./clientMessageHandler";
 import Core, { Phase } from '../Core/core'
@@ -153,18 +153,27 @@ export class ServerMessageHandler {
     recvAddFriend(data: string) {
         let returnData = JSON.parse(data);
         if(returnData['result'] == 'ok') {
-            DisplayDriver.commandPrint(`Friend request to ${returnData['room_name']} sent !\n`);
+            DisplayDriver.commandPrint(`Friend request to ${returnData['username']} sent !\n`);
             return;
         }
 
-        if(returnData['result'] == 'unknown_user') {
-            DisplayDriver.commandPrint(`User ${returnData['room_name']} isn't online ! !\n`);
+        if(returnData['result'] == 'user_unknown') {
+            DisplayDriver.commandPrint(`User ${returnData['username']} isn't online ! !\n`);
+            return;
+        }
+
+        if(returnData['result'] == 'request') {
+            DisplayDriver.commandPrint(`${returnData['username']} sent you a friend request !\n`);
             return;
         }
     };
 
     recvAcceptFriend(data: string) {
-
+        let returnData = JSON.parse(data);
+        if(returnData['result'] == 'ok') {
+            DisplayDriver.commandPrint(`${returnData['username']} accepted your friend request !\n`);
+            return;
+        }
     };
 
     recvAddRoom(data: string) {
@@ -268,7 +277,6 @@ export class ServerMessageHandler {
             return;
 
         let messageObject = JSON.parse(messageData);
-        console.log(messageData)
         let messageType = messageObject['type'];
 
         if (messageType == 'message') {
@@ -278,7 +286,13 @@ export class ServerMessageHandler {
             let guest =  (messageObject['user_type'] == 'guest');
 
             if (message == 'rickroll') {
-              DisplayDriver.chat(rickRoll);
+              DisplayDriver.commandPrint(rickRoll);
+            }
+            else if (message == 'surprisedpikachu') {
+              DisplayDriver.commandPrint(pika);
+            }
+            else if (message == "got'em") {
+              DisplayDriver.commandPrint(gotem);
             }
             else if (userName == this.clientHandler.getUsername()) {
                 let formated = DisplayDriver.formatChatMessage(timestamp, userName, message, guest, true);
@@ -295,19 +309,20 @@ export class ServerMessageHandler {
                 messageObject['username'],
                 messageObject['message']);
             DisplayDriver.chat(formatedMessage);
-
         }
         else if (messageType == 'join') {
             let timestamp = messageObject['timestamp'];
             let userName = messageObject['username'];
-            let formated = DisplayDriver.formatInfoJoin(timestamp, userName);
+            let userType = (messageObject['user_type'] == 'guest');
+            let formated = DisplayDriver.formatInfoJoin(timestamp, userName, userType);
             DisplayDriver.chat(formated);
         }
         else if (messageType == 'leave') {
             let timestamp = messageObject['timestamp'];
             let reason = messageObject['reason'];
             let userName = messageObject['username'];
-            let formated = DisplayDriver.formatInfoLeave(timestamp, userName, reason);
+            let userType = (messageObject['user_type'] == 'guest')
+            let formated = DisplayDriver.formatInfoLeave(timestamp, userName, reason, userType);
             DisplayDriver.chat(formated);
         };
     };
