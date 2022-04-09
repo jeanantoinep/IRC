@@ -16,7 +16,7 @@ export default class Core{
     private clientMessageHandler: ClientMessageHandler;
     private serverMessageHandler: ServerMessageHandler;
 
-    private serverBanner: string = '';
+    public serverBanner: string = '';
     private serverBannerSize: number = 0;
 
     constructor() {

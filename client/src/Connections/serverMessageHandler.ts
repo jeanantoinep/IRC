@@ -225,6 +225,8 @@ export class ServerMessageHandler {
     };
 
     recvListRoom(data: string) {
+        DisplayDriver.printBanner(this.core.serverBanner, true, true);
+        DisplayDriver.setCurrentPrompt('> ');
         DisplayDriver.print('Room List\n\n', true)
         let roomsArray = JSON.parse(data);
 
