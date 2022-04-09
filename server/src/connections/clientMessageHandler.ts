@@ -223,7 +223,6 @@ export class ClientMessageHandler {
         var dataParsed = JSON.parse(data);
         dataParsed['timestamp'] = this.getTimestamp();
         var result = await this.dbDriver.addMsg(JSON.stringify(dataParsed), socket.data['username']);
-        var userId;
         if (result == "error") {
             this.io.to(socket.id).emit("msg", JSON.stringify({ "result": result }));
         } else {

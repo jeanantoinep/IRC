@@ -267,7 +267,6 @@ export class ServerMessageHandler {
             return;
 
         let messageObject = JSON.parse(messageData);
-        console.log(messageData)
         let messageType = messageObject['type'];
 
         if (messageType == 'message') {
