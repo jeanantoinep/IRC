@@ -2,14 +2,9 @@ import { Console } from 'console';
 import { stdout, stdin } from 'process';
 import readline from 'readline'
 
-
-
-
 export default class DisplayDriver {
     static rl: readline.Interface = this.createReadlineInterface();
-
     static shouldPrompt: boolean = false;
-
     static currentPrompt: string = '';
 
     static getDriver() {
@@ -20,14 +15,13 @@ export default class DisplayDriver {
         return this.currentPrompt;
     }
 
-    static setCurrentPrompt(prompt:string) {
+    static setCurrentPrompt(prompt: string) {
         this.currentPrompt = prompt;
     }
 
-    static createReadlineInterface() : readline.Interface {
+    static createReadlineInterface(): readline.Interface {
         let rl = readline.createInterface({
             input: stdin,
-            //output: stdout,
             terminal: true,
         });
 
@@ -47,13 +41,12 @@ export default class DisplayDriver {
 
     static resumeInput() {
         this.rl.resume();
-        //stdout.write('> ');
     }
 
     static enableInput() {
     }
 
-    static enableMessageInput(){
+    static enableMessageInput() {
         stdout.write(this.currentPrompt);
     }
 
@@ -61,13 +54,13 @@ export default class DisplayDriver {
         let table: string[] = [];
         let line = '';
         list.forEach((value: any, index: number) => {
-            if(index % col != 0 || index == 0) {
+            if (index % col != 0 || index == 0) {
                 line += '#' + value['name'].padEnd(10, ' ');
                 line += ' '.padEnd(5, ' ');
                 return;
             }
 
-            if(index % col == 0 && index != 0) {
+            if (index % col == 0 && index != 0) {
                 line += '#' + value['name']
                 line += '\n';
                 table.push(line);
@@ -75,8 +68,8 @@ export default class DisplayDriver {
             }
         });
         table.push(line);
-        table.forEach((line:string) => {
-            let offset = Math.floor((stdout.columns - (line.length)) /2);
+        table.forEach((line: string) => {
+            let offset = Math.floor((stdout.columns - (line.length)) / 2);
             stdout.cursorTo(offset);
             this.print(line);
             this.print('\n')
@@ -89,7 +82,7 @@ export default class DisplayDriver {
 
     static startChat() {
         let rowsCount = stdout.rows
-        while(rowsCount) {
+        while (rowsCount) {
             DisplayDriver.print('\n');
             rowsCount--;
         }
@@ -98,7 +91,7 @@ export default class DisplayDriver {
 
     static scrollDown(currentRow: number) {
         let rowsCount = stdout.rows - currentRow;
-        while(rowsCount) {
+        while (rowsCount) {
             DisplayDriver.print('\n');
             rowsCount--;
         }
@@ -106,7 +99,7 @@ export default class DisplayDriver {
 
     static getMaxWidth(str: string) {
         let maxwidth: number = 0;
-        for(let line of str.split('\n')){
+        for (let line of str.split('\n')) {
             maxwidth = line.length > maxwidth ? line.length : maxwidth;
         }
         return maxwidth;
@@ -114,17 +107,16 @@ export default class DisplayDriver {
 
 
     static printBanner(banner: string, center: boolean, clear: boolean) {
-        if(clear)
+        if (clear)
             DisplayDriver.clearTerminal();
-        if(!center)
+        if (!center)
             DisplayDriver.print(banner);
         else {
             let terminalWidth = stdout.columns;
-            let offset = (terminalWidth - 96) /2;
+            let offset = (terminalWidth - 96) / 2;
             let lines = banner.split('\n');
 
-            //DisplayDriver.print(banner)
-            for(let line of lines) {
+            for (let line of lines) {
                 stdout.cursorTo(offset);
                 DisplayDriver.print(line)
                 DisplayDriver.print('\n');
@@ -133,24 +125,28 @@ export default class DisplayDriver {
         DisplayDriver.print('\n');
     }
 
+    static chatCommand(msg: string) {
+        let message = ''.padStart(25, ' ') + msg;
+        this.chat(message);
+    }
+
     static chat(msg: string) {
         //Header: 25 char
-        if(msg.length > stdout.columns -1)
-        {
+        if (msg.length > stdout.columns - 1) {
             stdout.clearLine(0);
             stdout.cursorTo(0);
             let lines: string[] = [];
             let message = msg;
             let index = 0;
-            while(message.length != 0) {
-                if(index == 0) {
+            while (message.length != 0) {
+                if (index == 0) {
                     let substr = message.substring(0, stdout.columns)
                     lines.push(substr);
                     message = message.substring(substr.length);
                 }
                 else {
-                    let substr = ''.padStart(25, ' ') + message.substring(0, stdout.columns -25)
-                    if(substr.startsWith(' '))
+                    let substr = ''.padStart(25, ' ') + message.substring(0, stdout.columns - 25)
+                    if (substr.startsWith(' '))
                         substr = substr.substring(1);
 
                     lines.push(substr);
@@ -161,8 +157,7 @@ export default class DisplayDriver {
             stdout.cursorTo(0);
             stdout.moveCursor(0, -lines.length + 1);
             stdout.clearScreenDown();
-            //console.log(lines)
-            lines.forEach((line:string) => {
+            lines.forEach((line: string) => {
                 stdout.clearLine(0);
                 stdout.cursorTo(0);
                 stdout.write(line + '\n');
@@ -179,18 +174,14 @@ export default class DisplayDriver {
         stdout.clearLine(0);
         stdout.cursorTo(0);
         stdout.write(msg);
-        this.rl.line = this.currentPrompt;
     }
 
-    static print(msg: string, center:boolean = false) : void {
-        //let currentLine = this.rl.line;
-        //stdout.moveCursor(5, 0);
-        if(center) {
-            let offset = Math.floor((stdout.columns - msg.length) /2);
+    static print(msg: string, center: boolean = false): void {
+        if (center) {
+            let offset = Math.floor((stdout.columns - msg.length) / 2);
             stdout.cursorTo(offset);
         }
         stdout.write(msg);
-        //stdout.write(currentLine);
     }
 
     static dump(data: any) {
@@ -200,10 +191,9 @@ export default class DisplayDriver {
     static async createPrompt(message: string) {
         DisplayDriver.print(message);
         this.currentPrompt = message;
-        let answer =  await new Promise<string>((resolve, reject) => {
+        let answer = await new Promise<string>((resolve, reject) => {
             this.rl.question(message, (input) => {
                 this.currentPrompt = '';
-                //DisplayDriver.print('\n');
                 resolve(input);
             });
         });
@@ -224,24 +214,24 @@ export default class DisplayDriver {
     }
 
     static formatChatMessage(timestamp: string,
-                             username: string,
-                             message: string,
-                             guest: boolean = false,
-                             self = false): string {
+        username: string,
+        message: string,
+        guest: boolean = false,
+        self = false): string {
 
         let line = timestamp + ' ';
         const prefix = guest ? '+' : '@';
         if (self)
-          line += String('<\x1b[32m' + prefix + username + '\x1b[0m> ').padStart(25, ' ');
+            line += String('<\x1b[32m' + prefix + username + '\x1b[0m> ').padStart(25, ' ');
         else
-          line += String('<\x1b[31m' + prefix + username + '\x1b[0m> ').padStart(25, ' ');
+            line += String('<\x1b[31m' + prefix + username + '\x1b[0m> ').padStart(25, ' ');
         line += message;
         return line;
     }
 
     static formatHistoryMessage(timestamp: string,
-                            username: string,
-                            message: string): string {
+        username: string,
+        message: string): string {
 
         let line = '\u001b[38;5;245m' + timestamp + ' ';
         line += String('<' + username + '> ').padStart(16, ' ');
@@ -249,24 +239,25 @@ export default class DisplayDriver {
         return line;
     }
 
-    static formatPrivateMessage(timestamp: string, username: string, message: string): string {
+    static formatPrivateMessage(timestamp: string, username: string, message: string, receiver: string): string {
         let line = '\u001b[7m' + timestamp + ' ';
         let userName = String('<#' + username + '> ').padStart(16, ' ');
-        line += userName;
+        let receiverName = String('<#' + receiver + '> ');
+        line += userName + '(to ' + receiverName + ') ';
         line += message;
         line += '\u001b[0m';
         return line;
     }
 
-    static formatInfoJoin(timestamp: string, username: string, guest:boolean): string {
+    static formatInfoJoin(timestamp: string, username: string, guest: boolean): string {
         let line = timestamp + ' ';
         const prefix = guest ? '+' : '@';
         line += ''.padStart(16, ' ');
-      line += '\x1b[32m' + prefix + username + '\x1b[0m' + ' entered the chat !'
+        line += '\x1b[32m' + prefix + username + '\x1b[0m' + ' entered the chat !'
         return line;
     }
 
-    static formatInfoLeave(timestamp: string, username: string, reason: string, guest:boolean): string {
+    static formatInfoLeave(timestamp: string, username: string, reason: string, guest: boolean): string {
         let line = timestamp + ' ';
         const prefix = guest ? '+' : '@';
         line += ''.padStart(16, ' ');

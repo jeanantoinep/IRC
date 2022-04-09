@@ -5,7 +5,6 @@ import { rickRoll, pika, gotem } from "../ascii";
 
 import { ClientMessageHandler } from "./clientMessageHandler";
 import Core, { Phase } from '../Core/core'
-import { privateEncrypt } from "crypto";
 
 export class ServerMessageHandler {
     private socket: Socket<ServerToClientEvents, ClientToServerEvents>;
@@ -23,23 +22,23 @@ export class ServerMessageHandler {
     }
 
     init() {
-        this.socket.on('addFriend',     (data:string) => this.recvAddFriend(data));
-        this.socket.on('acceptFriend',  (data: string) => this.recvAcceptFriend(data));
-        this.socket.on('addRoom',       (data:string) => this.recvAddRoom(data));
-        this.socket.on('connect',       ()=> this.recvConnect());
+        this.socket.on('addFriend', (data: string) => this.recvAddFriend(data));
+        this.socket.on('acceptFriend', (data: string) => this.recvAcceptFriend(data));
+        this.socket.on('addRoom', (data: string) => this.recvAddRoom(data));
+        this.socket.on('connect', () => this.recvConnect());
         this.socket.on('connect_error', (err: Error) => this.recvConnectError(err));
-        this.socket.on('disconnect',    (reason: Socket.DisconnectReason) => this.recvDisconnect(reason));
-        this.socket.on('history',       (data: string) => this.recvHistory(data));
-        this.socket.on('joinRoom',      (data: string) => this.recvJoinRoom(data));
-        this.socket.on('leaveRoom',     (data: string) => this.recvLeaveRoom(data));
-        this.socket.on('listRoom',      (data: string) => this.recvListRoom(data));
-        this.socket.on('listUser',      (data: string) => this.recvListUsers(data));
-        this.socket.on('login',         (data: string) => this.recvLogin(data));
+        this.socket.on('disconnect', (reason: Socket.DisconnectReason) => this.recvDisconnect(reason));
+        this.socket.on('history', (data: string) => this.recvHistory(data));
+        this.socket.on('joinRoom', (data: string) => this.recvJoinRoom(data));
+        this.socket.on('leaveRoom', (data: string) => this.recvLeaveRoom(data));
+        this.socket.on('listRoom', (data: string) => this.recvListRoom(data));
+        this.socket.on('listUser', (data: string) => this.recvListUsers(data));
+        this.socket.on('login', (data: string) => this.recvLogin(data));
         this.socket.on('anonymousLogin', (data: string) => this.recvAnonymousLogin(data));
-        this.socket.on('register',      (data: string) => this.recvRegister(data));
-        this.socket.on('msg',           (data:string) => this.recvMessage(data));
-        this.socket.on('ascii',         (data: string) => this.recvAsciiBanner(data));
-        this.socket.on('pm',            (data: string) => this.recvPrivateMessage(data));
+        this.socket.on('register', (data: string) => this.recvRegister(data));
+        this.socket.on('msg', (data: string) => this.recvMessage(data));
+        this.socket.on('ascii', (data: string) => this.recvAsciiBanner(data));
+        this.socket.on('pm', (data: string) => this.recvPrivateMessage(data));
     }
 
     recvAsciiBanner(data: string) {
@@ -109,7 +108,7 @@ export class ServerMessageHandler {
                         pwd = await DisplayDriver.createPrompt(`Please enter a password with at least 3 characters: `);
                         len = pwd.length;
                     }
-                    //let pwd = await DisplayDriver.createPrompt(`Password :`);
+
                     this.clientHandler.sendRegisterRequest(this.clientHandler.getUsername(), pwd);
                     loop = false;
                     return;
@@ -129,8 +128,7 @@ export class ServerMessageHandler {
         };
 
         if (returnData['result'] == 'wrong_pwd') {
-            DisplayDriver.print('Invalid password !\n');
-            this.core.startLoginPhase();
+            this.core.startLoginPhase(true);
         };
 
         if (returnData['result'] == 'ok') {
@@ -152,33 +150,38 @@ export class ServerMessageHandler {
 
     recvAddFriend(data: string) {
         let returnData = JSON.parse(data);
-        if(returnData['result'] == 'ok') {
-            DisplayDriver.commandPrint(`Friend request to ${returnData['username']} sent !\n`);
-            return;
-        }
 
-        if(returnData['result'] == 'user_unknown') {
-            DisplayDriver.commandPrint(`User ${returnData['username']} isn't online ! !\n`);
-            return;
-        }
-
-        if(returnData['result'] == 'request') {
-            DisplayDriver.commandPrint(`${returnData['username']} sent you a friend request !\n`);
-            return;
+        switch (returnData['result']) {
+            case 'ok':
+                DisplayDriver.chatCommand(`Friend request to ${returnData['username']} sent !`);
+                break;
+            case 'user_unknown':
+                DisplayDriver.chatCommand(`User ${returnData['username']} isn't online !`);
+                break;
+            case 'guest':
+                DisplayDriver.chatCommand(`You can't send friend requests as a guest user! Please register !`);
+                break;
+            case 'error':
+                DisplayDriver.chatCommand(`Friend request error ! Please retry later.`);
+                break;
+            case 'request':
+                DisplayDriver.chatCommand(`${returnData['username']} sent you a friend request !`);
+                break;
+            default: break;
         }
     };
 
     recvAcceptFriend(data: string) {
         let returnData = JSON.parse(data);
-        if(returnData['result'] == 'ok') {
-            DisplayDriver.commandPrint(`${returnData['username']} accepted your friend request !\n`);
+        if (returnData['result'] == 'ok') {
+            DisplayDriver.chatCommand(`${returnData['username']} accepted your friend request !`);
             return;
         }
     };
 
     recvAddRoom(data: string) {
         let returnData = JSON.parse(data);
-        if(returnData['result'] == 'success') {
+        if (returnData['result'] == 'success') {
             DisplayDriver.commandPrint(`Room ${returnData['room_name']} successfully created!\n\n`);
             DisplayDriver.commandPrint('Type /refresh to refresh the rooms list.\n\n');
             DisplayDriver.commandPrint(`Type /join ${returnData['room_name']} to join the room.\n\n`)
@@ -190,7 +193,7 @@ export class ServerMessageHandler {
         //console.log(data)
         let returnData = JSON.parse(data);
 
-        for(let message of returnData) {
+        for (let message of returnData) {
             let messageData = message['message'].split(' ', 2);
             let timestamp = messageData[0];
             let username = messageData[1];
@@ -222,35 +225,10 @@ export class ServerMessageHandler {
     };
 
     recvListRoom(data: string) {
-
-        // DisplayDriver.print(`
-        // ╦═╗┌─┐┌─┐┌┬┐  ╦  ┬┌─┐┌┬┐
-        // ╠╦╝│ ││ ││││  ║  │└─┐ │
-        // ╩╚═└─┘└─┘┴ ┴  ╩═╝┴└─┘ ┴`+'\n', true)
         DisplayDriver.print('Room List\n\n', true)
         let roomsArray = JSON.parse(data);
 
-        let rows = 0;
-
         DisplayDriver.printTable(roomsArray, 5);
-        /*
-        roomsArray.forEach((room:any) => {
-           DisplayDriver.print('╔');
-            for(let i = 0; i < room['name'].toString().length + 2; i++) {
-              DisplayDriver.print('═');
-            };
-            DisplayDriver.print('╗' + '\n');
-            DisplayDriver.print('║ ');
-            DisplayDriver.print(room['name']);
-            DisplayDriver.print(' ║' + '\n');
-            DisplayDriver.print('╚');
-            for(let i = 0; i < room['name'].toString().length + 2; i++) {
-              DisplayDriver.print('═');
-            };
-            DisplayDriver.print('╝' + '\n');
-            rows++;
-        });
-        */
         DisplayDriver.scrollDown(19);
         DisplayDriver.print('Feeling lost? Type /help at anytime to get the available commands!\n', true)
         DisplayDriver.print(DisplayDriver.getCurrentPrompt());
@@ -260,20 +238,19 @@ export class ServerMessageHandler {
         let returnData = JSON.parse(data);
 
         DisplayDriver.chat(''.padStart(25) + 'Users in the current channel: ')
-        for(let userData of returnData['users']) {
-            if(userData['username'] == undefined)
+        for (let userData of returnData['users']) {
+            if (userData['username'] == undefined)
                 continue;
-            if(userData['user_type'] == 'guest')
+            if (userData['user_type'] == 'guest')
                 DisplayDriver.chat(''.padStart(25) + '+' + '\x1b[32m' + userData['username'] + '\x1b[0m');
             else
                 DisplayDriver.chat(''.padStart(25) + '@' + '\x1b[32m' + userData['username'] + '\x1b[0m');
         };
 
-        //console.log(reurnData)
     };
 
     recvMessage(messageData: string) {
-        if(this.clientHandler.currentPhase != Phase.chat)
+        if (this.clientHandler.currentPhase != Phase.chat)
             return;
 
         let messageObject = JSON.parse(messageData);
@@ -283,16 +260,16 @@ export class ServerMessageHandler {
             let timestamp = messageObject['timestamp'];
             let userName = messageObject['username'];
             let message = messageObject['message'];
-            let guest =  (messageObject['user_type'] == 'guest');
+            let guest = (messageObject['user_type'] == 'guest');
 
             if (message == 'rickroll') {
-              DisplayDriver.commandPrint(rickRoll);
+                DisplayDriver.commandPrint(rickRoll);
             }
             else if (message == 'surprisedpikachu') {
-              DisplayDriver.commandPrint(pika);
+                DisplayDriver.commandPrint(pika);
             }
             else if (message == "got'em") {
-              DisplayDriver.commandPrint(gotem);
+                DisplayDriver.commandPrint(gotem);
             }
             else if (userName == this.clientHandler.getUsername()) {
                 let formated = DisplayDriver.formatChatMessage(timestamp, userName, message, guest, true);
@@ -307,7 +284,8 @@ export class ServerMessageHandler {
             let formatedMessage = DisplayDriver.formatPrivateMessage(
                 messageObject['timestamp'],
                 messageObject['username'],
-                messageObject['message']);
+                messageObject['message'],
+                messageObject['receiver_name']);
             DisplayDriver.chat(formatedMessage);
         }
         else if (messageType == 'join') {
