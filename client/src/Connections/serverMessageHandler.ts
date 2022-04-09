@@ -151,26 +151,31 @@ export class ServerMessageHandler {
 
     recvAddFriend(data: string) {
         let returnData = JSON.parse(data);
-        if(returnData['result'] == 'ok') {
-            DisplayDriver.commandPrint(`Friend request to ${returnData['username']} sent !\n`);
-            return;
-        }
 
-        if(returnData['result'] == 'user_unknown') {
-            DisplayDriver.commandPrint(`User ${returnData['username']} isn't online ! !\n`);
-            return;
-        }
-
-        if(returnData['result'] == 'request') {
-            DisplayDriver.commandPrint(`${returnData['username']} sent you a friend request !\n`);
-            return;
+        switch(returnData['result']) {
+            case 'ok':
+                DisplayDriver.chatCommand(`Friend request to ${returnData['username']} sent !`);
+                break;
+            case 'user_unknown':
+                DisplayDriver.chatCommand(`User ${returnData['username']} isn't online !`);
+                break;
+            case 'guest':
+                DisplayDriver.chatCommand(`You can't send friend requests as a guest user! Please register !`);
+                break;
+            case 'error':
+                DisplayDriver.chatCommand(`Friend request error ! Please retry later.`);
+                break;
+            case 'request':
+                DisplayDriver.chatCommand(`${returnData['username']} sent you a friend request !`);
+                break;
+            default: break;
         }
     };
 
     recvAcceptFriend(data: string) {
         let returnData = JSON.parse(data);
         if(returnData['result'] == 'ok') {
-            DisplayDriver.commandPrint(`${returnData['username']} accepted your friend request !\n`);
+            DisplayDriver.chatCommand(`${returnData['username']} accepted your friend request !`);
             return;
         }
     };

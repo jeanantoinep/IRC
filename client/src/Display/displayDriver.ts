@@ -132,6 +132,11 @@ export default class DisplayDriver {
         DisplayDriver.print('\n');
     }
 
+    static chatCommand(msg: string) {
+        let message = ''.padStart(25, ' ') + msg;
+        this.chat(message);
+    }
+
     static chat(msg: string) {
         //Header: 25 char
         if(msg.length > stdout.columns -1)
@@ -178,7 +183,7 @@ export default class DisplayDriver {
         stdout.clearLine(0);
         stdout.cursorTo(0);
         stdout.write(msg);
-        this.rl.line = this.currentPrompt;
+        //this.rl.line = this.currentPrompt;
     }
 
     static print(msg: string, center:boolean = false) : void {
