@@ -45,6 +45,7 @@ export interface ClientToServerEvents {
     //Users
     listUser: (roomName: string) => void;
     addFriend: (username: string) => void;
+    acceptFriend: (data: string) => void;
 
     //Misc
     ascii: () => void;

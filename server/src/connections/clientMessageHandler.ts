@@ -174,7 +174,7 @@ export class ClientMessageHandler {
         if (result != "[]") {
             try {
                 socket.join(roomName.toLowerCase());
-                if (this.allSockets[socket.data['username']] != undefined) {
+                if (this.allSockets[socket.data['username'].toLowerCase()] != undefined) {
                     this.allSockets[socket.data['username'].toLowerCase()] = socket.id;
                 }
                 this.io.to(socket.id).emit("joinRoom", JSON.stringify({ "result": "ok", "room_name": roomName }));
