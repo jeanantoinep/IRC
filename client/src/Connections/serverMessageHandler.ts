@@ -302,7 +302,6 @@ export class ServerMessageHandler {
                 messageObject['username'],
                 messageObject['message']);
             DisplayDriver.chat(formatedMessage);
-
         }
         else if (messageType == 'join') {
             let timestamp = messageObject['timestamp'];
