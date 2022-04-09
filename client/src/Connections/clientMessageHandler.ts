@@ -66,7 +66,7 @@ export class ClientMessageHandler {
             let sequence: string = data[1].sequence;
             let name = data[1].name;
             //console.log(data)
-            
+
             if(name == 'c' && data[1].ctrl == true)
                 this.socket.emit('exit', this.roomName);
 
@@ -83,7 +83,7 @@ export class ClientMessageHandler {
             //     }
             //         return;
             // }
-            
+
             // if(name == 'left') {
             //      //console.log(DisplayDriver.getCursorPos().cols)
             //     if(DisplayDriver.getCursorPos() > 0) {
@@ -162,7 +162,7 @@ export class ClientMessageHandler {
         let commandArgs = command.split(' ', 2);
 
         switch (commandArgs[0].toLowerCase()) {
-            case '/rooms':
+            case '/refresh':
                 this.sendRoomsListRequest();
                 break;
 

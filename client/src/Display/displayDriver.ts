@@ -112,6 +112,7 @@ export default class DisplayDriver {
         return maxwidth;
     }
 
+
     static printBanner(banner: string, center: boolean, clear: boolean) {
         if(clear)
             DisplayDriver.clearTerminal();
@@ -130,6 +131,11 @@ export default class DisplayDriver {
             }
         }
         DisplayDriver.print('\n');
+    }
+
+    static chatCommand(msg: string) {
+        let message = ''.padStart(25, ' ') + msg;
+        this.chat(message);
     }
 
     static chat(msg: string) {
@@ -178,7 +184,7 @@ export default class DisplayDriver {
         stdout.clearLine(0);
         stdout.cursorTo(0);
         stdout.write(msg);
-        this.rl.line = this.currentPrompt;
+        //this.rl.line = this.currentPrompt;
     }
 
     static print(msg: string, center:boolean = false) : void {
@@ -248,10 +254,11 @@ export default class DisplayDriver {
         return line;
     }
 
-    static formatPrivateMessage(timestamp: string, username: string, message: string): string {
+    static formatPrivateMessage(timestamp: string, username: string, message: string, receiver: string): string {
         let line = '\u001b[7m' + timestamp + ' ';
         let userName = String('<#' + username + '> ').padStart(16, ' ');
-        line += userName;
+        let receiverName = String('<#' + receiver + '> ');
+        line += userName + '(to ' + receiverName + ') ';
         line += message;
         line += '\u001b[0m';
         return line;
