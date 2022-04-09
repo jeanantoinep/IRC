@@ -12,6 +12,7 @@ export interface ServerToClientEvents {
     listUser: (data: string) => void;
     pm: (data: string) => void; // seulement le message à l'envoyeur et au receveur
     addFriend: (data: string) => void; // demande d'ami : pour accepter /accept ?
+    acceptFriend: (username: string) => void;
 }
 
 export interface ClientToServerEvents {
@@ -29,5 +30,6 @@ export interface ClientToServerEvents {
     listUser: (roomName: string) => void;
     pm: (data: string) => void; // nom user + message
     addFriend: (username: string) => void;
+    acceptFriend: (username: string) => void;
     exit: (roomName: string) => void;
 }
