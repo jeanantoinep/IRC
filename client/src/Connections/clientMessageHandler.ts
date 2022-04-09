@@ -362,7 +362,7 @@ export class ClientMessageHandler {
             return;
         };
 
-        this.socket.emit('addFriend', userName);
+        this.socket.emit('addFriend', JSON.stringify({'username' : userName}));
         return;
     };
 

@@ -8,11 +8,13 @@ export class ClientMessageHandler {
     private io: Server<ClientToServerEvents, ServerToClientEvents>;
     private dbDriver: DatabaseDriver;
     private allSockets: { [username: string]: string };
+    private connectedUsers: {[socketID : string] : string}
 
     constructor(io: Server<ClientToServerEvents, ServerToClientEvents>, dbDriver: DatabaseDriver) {
         this.io = io;
         this.dbDriver = dbDriver;
         this.allSockets = {};
+        this.connectedUsers = {};
         this.init();
     }
 
@@ -46,6 +48,7 @@ export class ClientMessageHandler {
 
     recvExit(roomName: string, socket: Socket) {
         delete this.allSockets[socket.data['username'].toLowerCase()];
+        delete this.connectedUsers[socket.id];
         if (roomName != "") {
             this.io.to(roomName.toLowerCase()).emit("msg", JSON.stringify(
                 {
@@ -58,8 +61,10 @@ export class ClientMessageHandler {
     }
 
     recvDisconnecting(socket: Socket) {
-        if(this.allSockets[socket.data['username']] != undefined)
+        if(this.allSockets[socket.data['username']] != undefined) {
             delete this.allSockets[socket.data['username'].toLowerCase()];
+            delete this.connectedUsers[socket.id];
+        }
 
         if (socket.rooms.size > 1) {
             var socketRooms = socket.rooms.values();
@@ -101,6 +106,7 @@ export class ClientMessageHandler {
             this.io.to(socket.id).emit("anonymousLogin", JSON.stringify({ "result": "ok" }));
             socket.data['username'] = parsedData['username'];
             this.allSockets[socket.data['username'].toLowerCase()] = socket.id;
+            this.connectedUsers[socket.id] = 'guest';
         }
     }
 
@@ -123,6 +129,7 @@ export class ClientMessageHandler {
                     this.io.to(socket.id).emit("login", JSON.stringify({ "result": "ok" }));
                     socket.data['username'] = JSON.parse(result2)[0]['username'];
                     this.allSockets[socket.data['username'].toLowerCase()] = socket.id;
+                    this.connectedUsers[socket.id] = 'registered';
                 } else {
                     this.io.to(socket.id).emit("login", JSON.stringify({ 'result': 'wrong_pwd' }));
                 }
@@ -197,11 +204,13 @@ export class ClientMessageHandler {
     async recvListUser(roomName: string, socket: Socket) {
         console.log("listUser from client", socket.data['username']);
         var roomUsers = await this.io.in(roomName.toLowerCase()).fetchSockets();
-        var usernames: string[] = [];
+        var usernames: [{}] = [{}];
         roomUsers.forEach(element => {
-            usernames.push(element.data['username']);
+            var userType = this.connectedUsers[socket.id];
+            usernames.push({'username': element.data['username'], 'user_type': userType});
         });
-        this.io.to(socket.id).emit("listUser", JSON.stringify({ "usernames": usernames }));
+        console.log(usernames)
+        this.io.to(socket.id).emit("listUser", JSON.stringify({ "users": usernames }));
     }
 
     async recvMsg(data: string, socket: Socket) {
@@ -212,8 +221,7 @@ export class ClientMessageHandler {
         if (result == "error") {
             this.io.to(socket.id).emit("msg", JSON.stringify({ "result": result }));
         } else {
-            var userId = this.allSockets[socket.data['username'].toLowerCase()];
-            var userType = (userId == undefined) ? "guest" : "registered";
+            var userType = this.connectedUsers[socket.id];
             this.io.to(dataParsed['room_name'].toLowerCase()).emit("msg", JSON.stringify(
                 {
                     "username": socket.data['username'],
