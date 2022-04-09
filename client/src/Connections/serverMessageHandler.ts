@@ -106,7 +106,6 @@ export class ServerMessageHandler {
                     while (len < 3) {
                         DisplayDriver.clearTerminal();
                         pwd = await DisplayDriver.createPrompt(`Please enter a password with at least 3 characters: `);
-                        console.log('entered password: ' + pwd)
                         len = pwd.length;
                     }
                     //let pwd = await DisplayDriver.createPrompt(`Password :`);
@@ -170,6 +169,18 @@ export class ServerMessageHandler {
     };
 
     recvHistory(data: string) {
+        //console.log(data)
+        let returnData = JSON.parse(data);
+
+        for(let message of returnData) {
+            let messageData = message['message'].split(' ', 2);
+            let timestamp = messageData[0];
+            let username = messageData[1];
+            let offset = timestamp.length + username.length + 2;
+            let text = message['message'].substring(offset);
+
+            DisplayDriver.chat(DisplayDriver.formatHistoryMessage(timestamp, username, text));
+        }
 
     };
 
@@ -193,24 +204,18 @@ export class ServerMessageHandler {
     };
 
     recvListRoom(data: string) {
-        let roomArt =`
-        ╦═╗┌─┐┌─┐┌┬┐  ╦  ┬┌─┐┌┬┐
-        ╠╦╝│ ││ ││││  ║  │└─┐ │
-        ╩╚═└─┘└─┘┴ ┴  ╩═╝┴└─┘ ┴
-        `;
 
-        // for(let i = 0; i< offset_room; i++){
-        //   DisplayDriver.print(" ");
-        // }
-        //DisplayDriver.print(" ".repeat(offset_room) + roomArt + '\n');
-        // if (process.stdout.columns %2 == 0) {
-        //let offset_room= (process.stdout.columns - 24) /2;
-        //   DisplayDriver.print(" ".(offset_room) + roomArt + '\n');
-        // }
-        //DisplayDriver.print(("i".repeat(offset_room)) + roomArt + '\n');
+        // DisplayDriver.print(`
+        // ╦═╗┌─┐┌─┐┌┬┐  ╦  ┬┌─┐┌┬┐
+        // ╠╦╝│ ││ ││││  ║  │└─┐ │
+        // ╩╚═└─┘└─┘┴ ┴  ╩═╝┴└─┘ ┴`+'\n', true)
+        DisplayDriver.print('Room List\n\n', true)
         let roomsArray = JSON.parse(data);
 
         let rows = 0;
+
+        DisplayDriver.printTable(roomsArray, 5);
+        /*
         roomsArray.forEach((room:any) => {
            DisplayDriver.print('╔');
             for(let i = 0; i < room['name'].toString().length + 2; i++) {
@@ -227,16 +232,27 @@ export class ServerMessageHandler {
             DisplayDriver.print('╝' + '\n');
             rows++;
         });
-
-        DisplayDriver.scrollDown(rows + this.core.getServerBannerSize());
+        */
+        DisplayDriver.scrollDown(19);
+        DisplayDriver.print('Feeling lost? Type /help at anytime to get the available commands!\n', true)
         DisplayDriver.print(DisplayDriver.getCurrentPrompt());
     };
 
     recvListUsers(data: string) {
-        DisplayDriver.print(data);
+        let returnData = JSON.parse(data);
+
+        DisplayDriver.chat(''.padStart(25) + 'Users in the current channel: ')
+        returnData['usernames'].forEach((username:string) => {
+            DisplayDriver.chat(''.padStart(25) + username);
+        });
+
+        //console.log(returnData)
     };
 
     recvMessage(messageData: string) {
+        if(this.clientHandler.currentPhase != Phase.chat)
+            return;
+
         let messageObject = JSON.parse(messageData);
         let messageType = messageObject['type'];
 

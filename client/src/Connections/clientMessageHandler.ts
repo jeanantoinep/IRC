@@ -13,7 +13,7 @@ export class ClientMessageHandler {
     private phaseCommandHandler: (command: string) => void;
 
     //Phase data
-    private currentPhase: Phase = Phase.load;
+    public currentPhase: Phase = Phase.load;
     //Client data
     private username: string = '';
     private roomName: string = '';
@@ -57,7 +57,7 @@ export class ClientMessageHandler {
 
     private initInputHandlers() {
         stdin.on('SIGTERM', (data: Buffer) => {
-            process.exit(0);
+            this.socket.emit('exit', this.roomName);
         });
 
         // stdin.on('keypress', (...input) => {
@@ -68,7 +68,7 @@ export class ClientMessageHandler {
             //console.log(data)
             
             if(name == 'c' && data[1].ctrl == true)
-                process.exit(0);
+                this.socket.emit('exit', this.roomName);
 
             if (name == 'return' && this.inputData != '') {//End of line detection
                 this.printEol();
@@ -97,6 +97,7 @@ export class ClientMessageHandler {
             if(name == 'backspace' || name == 'delete') {//Character removal
                 let direction = (name = 'backspace' ? -1 : 1);
                 this.printCharRemoval(direction);
+                return;
             }
 
             this.printCharacter(char)
@@ -188,9 +189,9 @@ export class ClientMessageHandler {
     }
 
     showRoomListCommands() {
-        DisplayDriver.commandPrint('Available options:\n'
-            + '\t\t/join {room name} => Joins an existing room\n'
-            + '\t\t/create {room name} => Creates a new room\n')
+        DisplayDriver.commandPrint('Available options:\n');
+        DisplayDriver.commandPrint('\t\t/join {room name} => Joins an existing room\n');
+        DisplayDriver.commandPrint('\t\t/create {room name} => Creates a new room\n');
     }
 
     chatRoomCommandHandler(command: string) {
@@ -229,7 +230,7 @@ export class ClientMessageHandler {
             case '/pm':
                 commandArgs = command.split(' ', 2);
                 let userName = commandArgs[1];
-                let message = command.substring(commandArgs[1].length + 4);
+                let message = command.substring(commandArgs[1].length + 5);
                 this.sendPrivateMessageRequest(userName, message);
                 break;
 
