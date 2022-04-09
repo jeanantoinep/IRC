@@ -197,7 +197,8 @@ export class ClientMessageHandler {
                     {
                         'username': socket.data['username'],
                         'timestamp': this.getTimestamp(),
-                        'type': 'join'
+                        'type': 'join',
+                        'user_type' : this.connectedSockets[socket.id],
                     }));
             } catch (e) {
                 console.log(e);
@@ -238,7 +239,6 @@ export class ClientMessageHandler {
         var dataParsed = JSON.parse(data);
         dataParsed['timestamp'] = this.getTimestamp();
         var result = await this.dbDriver.addMsg(JSON.stringify(dataParsed), socket.data['username']);
-        var userId;
         if (result == "error") {
             this.io.to(socket.id).emit("msg", JSON.stringify({ "result": result }));
         } else {
@@ -296,7 +296,8 @@ export class ClientMessageHandler {
                     "timestamp": this.getTimestamp(),
                     "type": "leave",
                     "reason": "Disconnected",
-                    "username": socket.data['username']
+                    "username": socket.data['username'],
+                    'user_type' : this.connectedSockets[socket.id],
                 }));
             socket.leave(parsedData['room_name'].toLowerCase());
 
