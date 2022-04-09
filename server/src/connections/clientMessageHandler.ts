@@ -182,7 +182,8 @@ export class ClientMessageHandler {
                     {
                         'username': socket.data['username'],
                         'timestamp': this.getTimestamp(),
-                        'type': 'join'
+                        'type': 'join',
+                        'user_type' : this.connectedSockets[socket.id],
                     }));
             } catch (e) {
                 console.log(e);
@@ -280,7 +281,8 @@ export class ClientMessageHandler {
                     "timestamp": this.getTimestamp(),
                     "type": "leave",
                     "reason": "Disconnected",
-                    "username": socket.data['username']
+                    "username": socket.data['username'],
+                    'user_type' : this.connectedSockets[socket.id],
                 }));
             socket.leave(parsedData['room_name'].toLowerCase());
 

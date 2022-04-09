@@ -168,7 +168,11 @@ export class ServerMessageHandler {
     };
 
     recvAcceptFriend(data: string) {
-
+        let returnData = JSON.parse(data);
+        if(returnData['result'] == 'ok') {
+            DisplayDriver.commandPrint(`${returnData['username']} accepted your friend request !\n`);
+            return;
+        }
     };
 
     recvAddRoom(data: string) {
@@ -303,14 +307,16 @@ export class ServerMessageHandler {
         else if (messageType == 'join') {
             let timestamp = messageObject['timestamp'];
             let userName = messageObject['username'];
-            let formated = DisplayDriver.formatInfoJoin(timestamp, userName);
+            let userType = (messageObject['user_type'] == 'guest');
+            let formated = DisplayDriver.formatInfoJoin(timestamp, userName, userType);
             DisplayDriver.chat(formated);
         }
         else if (messageType == 'leave') {
             let timestamp = messageObject['timestamp'];
             let reason = messageObject['reason'];
             let userName = messageObject['username'];
-            let formated = DisplayDriver.formatInfoLeave(timestamp, userName, reason);
+            let userType = (messageObject['user_type'] == 'guest')
+            let formated = DisplayDriver.formatInfoLeave(timestamp, userName, reason, userType);
             DisplayDriver.chat(formated);
         };
     };
