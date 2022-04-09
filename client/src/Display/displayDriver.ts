@@ -254,10 +254,11 @@ export default class DisplayDriver {
         return line;
     }
 
-    static formatPrivateMessage(timestamp: string, username: string, message: string): string {
+    static formatPrivateMessage(timestamp: string, username: string, message: string, receiver: string): string {
         let line = '\u001b[7m' + timestamp + ' ';
         let userName = String('<#' + username + '> ').padStart(16, ' ');
-        line += userName;
+        let receiverName = String('<#' + receiver + '> ');
+        line += userName + '(to ' + receiverName + ') ';
         line += message;
         line += '\u001b[0m';
         return line;

@@ -312,7 +312,8 @@ export class ServerMessageHandler {
             let formatedMessage = DisplayDriver.formatPrivateMessage(
                 messageObject['timestamp'],
                 messageObject['username'],
-                messageObject['message']);
+                messageObject['message'],
+                messageObject['receiver_name']);
             DisplayDriver.chat(formatedMessage);
         }
         else if (messageType == 'join') {
