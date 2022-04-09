@@ -2,9 +2,6 @@ import { createPool, escape, Pool } from 'mysql2'
 
 
 export class DatabaseDriver {
-    acceptFriend(friendName: string) {
-        throw new Error("Method not implemented.");
-    }
     private pool: Pool;
 
 
@@ -114,7 +111,8 @@ export class DatabaseDriver {
                 return result['insertId'] as number
             })
             .catch((error: string) => {
-                return 'duplicate_entry'
+                console.log(error);
+                return 'error'
             });
     }
 
