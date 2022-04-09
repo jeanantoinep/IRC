@@ -48,6 +48,7 @@ export class ServerMessageHandler {
 
     recvConnect() {
         this.clientHandler.sendAsciiRequest();
+        this.core.consolePhase(Phase.load);
     }
 
     recvPrivateMessage(data: string) {
@@ -151,18 +152,27 @@ export class ServerMessageHandler {
     recvAddFriend(data: string) {
         let returnData = JSON.parse(data);
         if(returnData['result'] == 'ok') {
-            DisplayDriver.commandPrint(`Friend request to ${returnData['room_name']} sent !\n`);
+            DisplayDriver.commandPrint(`Friend request to ${returnData['username']} sent !\n`);
             return;
         }
 
-        if(returnData['result'] == 'unknown_user') {
-            DisplayDriver.commandPrint(`User ${returnData['room_name']} isn't online ! !\n`);
+        if(returnData['result'] == 'user_unknown') {
+            DisplayDriver.commandPrint(`User ${returnData['username']} isn't online ! !\n`);
+            return;
+        }
+
+        if(returnData['result'] == 'request') {
+            DisplayDriver.commandPrint(`${returnData['username']} sent you a friend request !\n`);
             return;
         }
     };
 
     recvAcceptFriend(data: string) {
-
+        let returnData = JSON.parse(data);
+        if(returnData['result'] == 'ok') {
+            DisplayDriver.commandPrint(`${returnData['username']} accepted your friend request !\n`);
+            return;
+        }
     };
 
     recvAddRoom(data: string) {
@@ -303,14 +313,16 @@ export class ServerMessageHandler {
         else if (messageType == 'join') {
             let timestamp = messageObject['timestamp'];
             let userName = messageObject['username'];
-            let formated = DisplayDriver.formatInfoJoin(timestamp, userName);
+            let userType = (messageObject['user_type'] == 'guest');
+            let formated = DisplayDriver.formatInfoJoin(timestamp, userName, userType);
             DisplayDriver.chat(formated);
         }
         else if (messageType == 'leave') {
             let timestamp = messageObject['timestamp'];
             let reason = messageObject['reason'];
             let userName = messageObject['username'];
-            let formated = DisplayDriver.formatInfoLeave(timestamp, userName, reason);
+            let userType = (messageObject['user_type'] == 'guest')
+            let formated = DisplayDriver.formatInfoLeave(timestamp, userName, reason, userType);
             DisplayDriver.chat(formated);
         };
     };

@@ -257,14 +257,14 @@ export default class DisplayDriver {
         return line;
     }
 
-    static formatInfoJoin(timestamp: string, username: string): string {
+    static formatInfoJoin(timestamp: string, username: string, guest:boolean): string {
         let line = timestamp + ' ';
         line += ''.padStart(16, ' ');
         line += username + ' entered the chat !'
         return line;
     }
 
-    static formatInfoLeave(timestamp: string, username: string, reason: string): string {
+    static formatInfoLeave(timestamp: string, username: string, reason: string, guest:boolean): string {
         let line = timestamp + ' ';
         line += ''.padStart(16, ' ');
         line += username + ' left the chat ! '
