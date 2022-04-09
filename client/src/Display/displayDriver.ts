@@ -222,21 +222,23 @@ export default class DisplayDriver {
         return this.rl.cursor
     }
 
-    static formatChatMessage(timestamp: string, 
-                             username: string, 
-                             message: string, 
+    static formatChatMessage(timestamp: string,
+                             username: string,
+                             message: string,
                              guest: boolean = false,
                              self = false): string {
 
         let line = timestamp + ' ';
-        if(self) line += String('<\x1b[31m@' + username + '\x1b[0m> ').padStart(25, ' ');
-        else line += String('<\x1b[32m@' + username + '\x1b[0m> ').padStart(25, ' ');
+        if (self)
+          line += String('<\x1b[32m@' + username + '\x1b[0m> ').padStart(25, ' ');
+        else
+          line += String('<\x1b[31m@' + username + '\x1b[0m> ').padStart(25, ' ');
         line += message;
         return line;
     }
 
-    static formatHistoryMessage(timestamp: string, 
-                            username: string, 
+    static formatHistoryMessage(timestamp: string,
+                            username: string,
                             message: string): string {
 
         let line = '\u001b[38;5;245m' + timestamp + ' ';
