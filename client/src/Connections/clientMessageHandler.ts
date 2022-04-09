@@ -4,7 +4,7 @@ import DisplayDriver from "../Display/displayDriver";
 import { ServerToClientEvents, ClientToServerEvents } from './socketEvents';
 import { Socket } from 'socket.io-client';
 
-import { Phase } from "../Core/core";
+import Core, { Phase } from "../Core/core";
 import { hasOnlyExpressionInitializer } from 'typescript';
 
 export class ClientMessageHandler {
