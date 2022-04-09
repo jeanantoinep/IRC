@@ -229,10 +229,11 @@ export default class DisplayDriver {
                              self = false): string {
 
         let line = timestamp + ' ';
+        let prefix = guest ? '+' : '@';
         if (self)
-          line += String('<\x1b[32m@' + username + '\x1b[0m> ').padStart(25, ' ');
+          line += String('<\x1b[32m' + prefix + username + '\x1b[0m> ').padStart(25, ' ');
         else
-          line += String('<\x1b[31m@' + username + '\x1b[0m> ').padStart(25, ' ');
+          line += String('<\x1b[31m' + prefix + username + '\x1b[0m> ').padStart(25, ' ');
         line += message;
         return line;
     }
