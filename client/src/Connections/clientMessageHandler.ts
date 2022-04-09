@@ -222,7 +222,7 @@ export class ClientMessageHandler {
                 break;
 
             case '/accept':
-                this.sendAddFriendRequest(commandArgs[1]);
+                this.sendAcceptFriendRequest(commandArgs[1]);
                 break;
 
             case '/pm':
