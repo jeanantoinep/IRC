@@ -79,10 +79,11 @@ export class ClientMessageHandler {
         }
     }
 
-    recvAcceptFriend(friendName: string, socket: Socket) {
+    recvAcceptFriend(data: string, socket: Socket) {
         console.log("acceptFriend from client", socket.data['username']);
-        let data = JSON.stringify({ "user_id_1": socket.data['username'], "user_id_2": this.allSockets[friendName.toLowerCase()] });
-        let result = this.dbDriver.addFriend(data);
+        var parsedData = JSON.parse(data);
+        let addData = JSON.stringify({ "user_id_1": this.allSockets[socket.data['username']], "user_id_2": this.allSockets[parsedData['username'].toLowerCase()] });
+        let result = this.dbDriver.addFriend(addData);
         console.log(result);
 
         // pool.query("INSERT INTO `friend` (name) VALUES (?)", [friendName], function (err, result) {
