@@ -49,25 +49,27 @@ export class ClientMessageHandler {
         if (roomName != "") {
             this.io.to(roomName.toLowerCase()).emit("msg", JSON.stringify(
                 {
-                    "timestamp":this.getTimestamp(),
-                    "type":"leave",
-                    "reason":"exited",
-                    "username":socket.data['username']
+                    "timestamp": this.getTimestamp(),
+                    "type": "leave",
+                    "reason": "Exit",
+                    "username": socket.data['username']
                 }));
         }
     }
 
     recvDisconnecting(socket: Socket) {
-        delete this.allSockets[socket.data['username'].toLowerCase()];
+        if(this.allSockets[socket.data['username']] != undefined)
+            delete this.allSockets[socket.data['username'].toLowerCase()];
+
         if (socket.rooms.size > 1) {
             var socketRooms = socket.rooms.values();
             socketRooms.next();
             this.io.to(socketRooms.next()['value'].toLowerCase()).emit("msg", JSON.stringify(
                 {
-                    "timestamp":this.getTimestamp(),
-                    "type":"leave",
-                    "reason":"connection timed out",
-                    "username":socket.data['username']
+                    "timestamp": this.getTimestamp(),
+                    "type": "leave",
+                    "reason": "Connection timed out",
+                    "username": socket.data['username']
                 }));
         }
     }
@@ -181,6 +183,8 @@ export class ClientMessageHandler {
             try {
                 socket.join(roomName.toLowerCase());
                 this.io.to(socket.id).emit("joinRoom", JSON.stringify({ "result": "ok", "room_name": roomName }));
+                this.io.to(roomName.toLowerCase())
+                    .emit("msg", JSON.stringify({ 'username': socket.data['username'], 'timestamp': this.getTimestamp(), 'type' : 'join'}));
             } catch (e) {
                 console.log(e);
                 this.io.to(socket.id).emit("joinRoom", JSON.stringify({ "result": "error", "room_name": roomName }));
@@ -251,19 +255,19 @@ export class ClientMessageHandler {
         console.log("leaveRoom " + JSON.parse(data)['room_name'] + " from client", socket.data['username']);
         var parsedData = JSON.parse(data);
         try {
-            socket.leave(parsedData['room_name'].toLowerCase());
+            //socket.leave(parsedData['room_name'].toLowerCase());
             this.io.to(socket.id).emit("leaveRoom", JSON.stringify({ "result": "ok", "room_name": parsedData['room_name'] }));
-            var socketRooms = socket.rooms.values();
-            socket.rooms.delete(parsedData['room_name']);
-            socketRooms.next();
-            console.log(socketRooms.next()['value']); // PROBLEME
-            // this.io.to(socketRooms.next()['value']).emit("msg", JSON.stringify(
-            //     {
-            //         "timestamp":this.getTimestamp(),
-            //         "type":"leave",
-            //         "reason":"",
-            //         "username":socket.data['username']
-            //     }));
+            var socketRooms = socket.rooms.keys();
+            //Object.keys(socketRooms)[1]
+            this.io.to(JSON.parse(data)['room_name']).emit("msg", JSON.stringify(
+                {
+                    "timestamp":this.getTimestamp(),
+                    "type":"leave",
+                    "reason":"Disconnected",
+                    "username":socket.data['username']
+                }));
+            socket.leave(parsedData['room_name'].toLowerCase());
+
         } catch (e) {
             console.log(e);
             this.io.to(socket.id).emit("leaveRoom", JSON.stringify({ "result": "error", "room_name": parsedData['room_name'] }));

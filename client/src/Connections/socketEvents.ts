@@ -49,4 +49,5 @@ export interface ClientToServerEvents {
     //Misc
     ascii: () => void;
     rick: () => void;
+    exit: (roomName: string) => void;
 }
