@@ -157,7 +157,6 @@ export class ClientMessageHandler {
                 DisplayDriver.commandPrint(`You can't use ${commandArgs[0]} in the room selection\n`);
                 break;
         }
-
     }
 
     showRoomListCommands() {
