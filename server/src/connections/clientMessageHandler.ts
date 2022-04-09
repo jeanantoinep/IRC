@@ -189,7 +189,6 @@ export class ClientMessageHandler {
             try {
                 socket.join(roomName.toLowerCase());
                 if (socket.data['username'] != undefined) {
-                    console.log("passage");
                     this.allSockets[socket.data['username'].toLowerCase()] = socket.id;
                 }
                 this.io.to(socket.id).emit("joinRoom", JSON.stringify({ "result": "ok", "room_name": roomName }));
