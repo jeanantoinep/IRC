@@ -62,7 +62,7 @@ export class ClientMessageHandler {
             let sequence: string = data[1].sequence;
             let name = data[1].name;
 
-            if(name == 'c' && data[1].ctrl == true)
+            if (name == 'c' && data[1].ctrl == true)
                 this.socket.emit('exit', this.roomName);
 
             if (name == 'return' && this.inputData != '') {//End of line detection
@@ -70,7 +70,7 @@ export class ClientMessageHandler {
                 return;
             }
 
-            if(name == 'backspace' || name == 'delete') {//Character removal
+            if (name == 'backspace' || name == 'delete') {//Character removal
                 let direction = (name = 'backspace' ? -1 : 1);
                 this.printCharRemoval(direction);
                 return;
@@ -142,14 +142,11 @@ export class ClientMessageHandler {
                 break;
 
             case '/join':
-                if (this.checkArgc(commandArgs, 2))
-                    this.sendJoinRequest(commandArgs[1])
+                this.sendJoinRequest(commandArgs[1])
                 break;
 
             case '/create':
-                if (this.checkArgc(commandArgs, 2))
-                    this.sendCreateRoomRequest(commandArgs[1]);
-                this.sendCreateRoomRequest();
+                this.sendCreateRoomRequest(commandArgs[1]);
                 break;
 
             case '/help':
@@ -224,12 +221,12 @@ export class ClientMessageHandler {
     }
 
     public sendAcceptFriendRequest(username: string) {
-        if(username == '' || username == undefined) {
+        if (username == '' || username == undefined) {
             DisplayDriver.print(`Invalid command /accept \n`);
             DisplayDriver.print('Usage: /accept {user_name}');
         }
 
-        this.socket.emit('acceptFriend', JSON.stringify({'username': username}));
+        this.socket.emit('acceptFriend', JSON.stringify({ 'username': username }));
     }
 
     parseCommand(command: string) {
@@ -301,7 +298,7 @@ export class ClientMessageHandler {
     };
 
     public sendLeaveRequest() {
-        this.socket.emit('leaveRoom', JSON.stringify({'room_name': this.roomName}));
+        this.socket.emit('leaveRoom', JSON.stringify({ 'room_name': this.roomName }));
         return;
     };
 
@@ -343,7 +340,7 @@ export class ClientMessageHandler {
             DisplayDriver.print('Usage: /add {user_name}\n');
             return;
         };
-        this.socket.emit('addFriend', JSON.stringify({'username' : userName}));
+        this.socket.emit('addFriend', JSON.stringify({ 'username': userName }));
         return;
     };
 

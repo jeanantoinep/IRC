@@ -39,8 +39,10 @@ export default class Core{
         return this.serverBannerSize;
     }
 
-    public async startLoginPhase() {
+    public async startLoginPhase(wrongPass: boolean = false) {
         DisplayDriver.printBanner(this.serverBanner, true, true);
+        if(wrongPass)
+            DisplayDriver.print('Invalid password !\n');
         await this.clientMessageHandler.startLoginProcess();
         this.clientMessageHandler.setPhase(Phase.login);
     }
