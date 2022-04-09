@@ -112,6 +112,7 @@ export default class DisplayDriver {
         return maxwidth;
     }
 
+
     static printBanner(banner: string, center: boolean, clear: boolean) {
         if(clear)
             DisplayDriver.clearTerminal();

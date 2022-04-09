@@ -5,6 +5,7 @@ import { rickRoll, pika, gotem } from "../ascii";
 
 import { ClientMessageHandler } from "./clientMessageHandler";
 import Core, { Phase } from '../Core/core'
+import { privateEncrypt } from "crypto";
 
 export class ServerMessageHandler {
     private socket: Socket<ServerToClientEvents, ClientToServerEvents>;
@@ -183,9 +184,9 @@ export class ServerMessageHandler {
     recvAddRoom(data: string) {
         let returnData = JSON.parse(data);
         if(returnData['result'] == 'success') {
-            DisplayDriver.commandPrint(`Room ${returnData['room_name']} successfully created!\n`);
-            DisplayDriver.commandPrint('Type /refresh to refresh the rooms list.\n');
-            DisplayDriver.commandPrint(`Type /join ${returnData['room_name']} to join the room.\n`)
+            DisplayDriver.commandPrint(`Room ${returnData['room_name']} successfully created!\n\n`);
+            DisplayDriver.commandPrint('Type /refresh to refresh the rooms list.\n\n');
+            DisplayDriver.commandPrint(`Type /join ${returnData['room_name']} to join the room.\n\n`)
         }
 
     };
