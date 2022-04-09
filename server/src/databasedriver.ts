@@ -107,6 +107,17 @@ export class DatabaseDriver {
             });
     }
 
+    public async addFriend(data: string): Promise<string | number> {
+        return this.query("INSERT INTO `friend` (user_id_1, user_id_2) VALUES (\
+                            '" + JSON.parse(data)['user_id_1'] + "', '" + JSON.parse(data)['user_id_2'] + "')")
+            .then((result: any) => {
+                return result['insertId'] as number
+            })
+            .catch((error: string) => {
+                return 'duplicate_entry'
+            });
+    }
+
     public async addMsg(data: string, senderName: string): Promise<string | number> {
         var dataParsed = JSON.parse(data);
         var sender = await this.getUserByUsername(senderName);
