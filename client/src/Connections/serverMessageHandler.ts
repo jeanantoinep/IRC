@@ -152,12 +152,17 @@ export class ServerMessageHandler {
     recvAddFriend(data: string) {
         let returnData = JSON.parse(data);
         if(returnData['result'] == 'ok') {
-            DisplayDriver.commandPrint(`Friend request to ${returnData['room_name']} sent !\n`);
+            DisplayDriver.commandPrint(`Friend request to ${returnData['username']} sent !\n`);
             return;
         }
 
-        if(returnData['result'] == 'unknown_user') {
-            DisplayDriver.commandPrint(`User ${returnData['room_name']} isn't online ! !\n`);
+        if(returnData['result'] == 'user_unknown') {
+            DisplayDriver.commandPrint(`User ${returnData['username']} isn't online ! !\n`);
+            return;
+        }
+
+        if(returnData['result'] == 'request') {
+            DisplayDriver.commandPrint(`${returnData['username']} sent you a friend request !\n`);
             return;
         }
     };
